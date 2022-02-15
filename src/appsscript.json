@@ -1,0 +1,31 @@
+{
+  "timeZone": "Etc/GMT",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.storage",
+    "https://www.googleapis.com/auth/gmail.addons.execute",
+    "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
+    "https://www.googleapis.com/auth/gmail.send",
+    "https://www.googleapis.com/auth/gmail.compose",
+    "https://www.googleapis.com/auth/script.external_request"
+  ],
+  "urlFetchWhitelist": [
+    "https://google.com/",
+    "https://stg.speedtoquote.com/",
+    "https://stg.speedtoquote.com/api/front-app/parseemail"
+  ],
+  "runtimeVersion": "V8",
+  "gmail": {
+    "name": "S2Q Gmail Plugins",
+    "logoUrl": "https://www.gstatic.com/images/icons/material/system/1x/receipt_black_24dp.png",
+    "contextualTriggers": [
+      {
+        "unconditional": {},
+        "onTriggerFunction": "getContextualAddOn"
+      }
+    ],
+    "primaryColor": "#2f3d8a",
+    "secondaryColor": "#a2d45e"
+  }
+}
