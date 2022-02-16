@@ -1,7 +1,7 @@
 function createSingleQuoteFormCard(event) {
   var card = CardService.newCardBuilder();
-  // var logoutButton = CreateLogoutButton(CardService.newCardSection());
-  // card.addSection(logoutButton);
+  var imageHeader = CreateImageHeader(CardService.newCardSection());
+  card.addSection(imageHeader);
   var message = getCurrentMessage(event);
   var subject = message.getSubject();
   var from = message.getFrom();
@@ -280,15 +280,11 @@ function addRateSection(section, rates) {
   section.addWidget(CardService.newDivider());
 }
 
-// function CreateLogoutButton(section) {
-//   var logoutAction = CardService.newAction().setFunctionName("logout");
-//   var button = CardService.newTextButton()
-//     .setText("Logout")
-//     .setOnClickAction(logoutAction);
-
-//   section.addWidget(button);
-//   return section;
-// }
+function CreateImageHeader(section) {
+  var image = CardService.newImage().setAltText("S2Q Banner").setImageUrl("https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/s2q_header.png");
+  section.addWidget(image);
+  return section;
+}
 
 function logout() {
   PropertiesService.getScriptProperties().deleteProperty("auths");

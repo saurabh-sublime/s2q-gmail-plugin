@@ -20,7 +20,7 @@
   "addOns": {
     "common": {
       "name": "S2Q Gmail Plugins",
-      "logoUrl": "https://www.gstatic.com/images/icons/material/system/1x/receipt_black_24dp.png",
+      "logoUrl": "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/logo.png",
       "openLinkUrlPrefixes": [
         "https://stg.speedtoquote.com/"
       ],
