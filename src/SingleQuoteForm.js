@@ -186,15 +186,29 @@ function createInputFormSection(section, event) {
     .setTopLabel("Rate Service")
     .setStartIcon(
       CardService.newIconImage().setIconUrl(
-        "https://www.dat.com/wp-content/uploads/2021/12/DAT_FA_LOGO_STACKED_DARK_215x94px.png"
+        "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
       )
     )
     .setEndIcon(
       CardService.newIconImage().setIconUrl(
-        "https://www.dat.com/wp-content/uploads/2021/12/DAT_FA_LOGO_STACKED_DARK_215x94px.png"
+        "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
       )
     );
   section.addWidget(decoratedText);
+  var radioGroup = CardService.newSelectionInput()
+    .setType(CardService.SelectionInputType.RADIO_BUTTON)
+    .setTitle("A group of radio buttons. Only a single selection is allowed.")
+    .setFieldName("checkbox_field")
+    .addItem("radio button one title", "radio_one_value", true)
+    .addItem("radio button two title", "radio_two_value", false)
+    .addItem("radio button three title", "radio_three_value", false);
+  section.addWidget(radioGroup);
+  var image = CardService.newImage()
+    .setAltText("A nice image")
+    .setImageUrl(
+      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
+    );
+  section.addWidget(image);
   putTextWidget(section, "costPerMile", "Cost p/m", state?.costPerMile);
   putTextWidget(section, "fuelPerMile", "Fuel Srchrge p/m", state?.fuelPerMile);
   putTextWidget(section, "distance", "Distance (Miles)", state?.distance);
