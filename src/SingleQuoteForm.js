@@ -181,7 +181,20 @@ function createInputFormSection(section, event) {
     putTextWidget(section, "costPerMile", "For TMS Rates", state?.costPerMile);
     addRateSection(section, getRates());
   }
-
+  var decoratedText = CardService.newDecoratedText()
+    .setText("Powered by")
+    .setTopLabel("Rate Service")
+    .setStartIcon(
+      CardService.newIconImage().setIconUrl(
+        "https://www.dat.com/wp-content/uploads/2021/12/DAT_FA_LOGO_STACKED_DARK_215x94px.png"
+      )
+    )
+    .setEndIcon(
+      CardService.newIconImage().setIconUrl(
+        "https://www.dat.com/wp-content/uploads/2021/12/DAT_FA_LOGO_STACKED_DARK_215x94px.png"
+      )
+    );
+  section.addWidget(decoratedText);
   putTextWidget(section, "costPerMile", "Cost p/m", state?.costPerMile);
   putTextWidget(section, "fuelPerMile", "Fuel Srchrge p/m", state?.fuelPerMile);
   putTextWidget(section, "distance", "Distance (Miles)", state?.distance);
@@ -222,6 +235,10 @@ function addRateSection(section, rates) {
     useStorageState("rateType");
 
   section.addWidget(CardService.newDivider());
+  var decoratedText = CardService.newDecoratedText()
+    .setText("Text")
+    .setTopLabel("TopLabel");
+  section.addWidget(decoratedText);
   section.addWidget(CardService.newTextParagraph().setText("<b>TMS Rates</b>"));
   section.addWidget(
     CardService.newTextParagraph().setText("<b>Rate Service:</b>" + "DAT")

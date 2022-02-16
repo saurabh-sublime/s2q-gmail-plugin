@@ -13,7 +13,8 @@
   "urlFetchWhitelist": [
     "https://google.com/",
     "https://stg.speedtoquote.com/",
-    "https://stg.speedtoquote.com/api/front-app/parseemail"
+    "https://stg.speedtoquote.com/api/front-app/parseemail",
+    "https://www.dat.com/wp-content/uploads/2020/11/DAT-FA-131x22-1.svg"
   ],
   "runtimeVersion": "V8",
   "gmail": {
