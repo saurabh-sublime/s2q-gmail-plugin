@@ -1,7 +1,7 @@
 function createSingleQuoteFormCard(event) {
   var card = CardService.newCardBuilder();
-  var logoutButton = CreateLogoutButton(CardService.newCardSection());
-  card.addSection(logoutButton);
+  // var logoutButton = CreateLogoutButton(CardService.newCardSection());
+  // card.addSection(logoutButton);
   var message = getCurrentMessage(event);
   var subject = message.getSubject();
   var from = message.getFrom();
@@ -280,15 +280,15 @@ function addRateSection(section, rates) {
   section.addWidget(CardService.newDivider());
 }
 
-function CreateLogoutButton(section) {
-  var logoutAction = CardService.newAction().setFunctionName("logout");
-  var button = CardService.newTextButton()
-    .setText("Logout")
-    .setOnClickAction(logoutAction);
+// function CreateLogoutButton(section) {
+//   var logoutAction = CardService.newAction().setFunctionName("logout");
+//   var button = CardService.newTextButton()
+//     .setText("Logout")
+//     .setOnClickAction(logoutAction);
 
-  section.addWidget(button);
-  return section;
-}
+//   section.addWidget(button);
+//   return section;
+// }
 
 function logout() {
   PropertiesService.getScriptProperties().deleteProperty("auths");

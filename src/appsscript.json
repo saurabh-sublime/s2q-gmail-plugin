@@ -17,9 +17,22 @@
     "https://www.dat.com/wp-content/uploads/2020/11/DAT-FA-131x22-1.svg"
   ],
   "runtimeVersion": "V8",
-  "gmail": {
-    "name": "S2Q Gmail Plugins",
-    "logoUrl": "https://www.gstatic.com/images/icons/material/system/1x/receipt_black_24dp.png",
+  "addOns": {
+    "common": {
+      "name": "S2Q Gmail Plugins",
+      "logoUrl": "https://www.gstatic.com/images/icons/material/system/1x/receipt_black_24dp.png",
+      "openLinkUrlPrefixes": [
+        "https://stg.speedtoquote.com/"
+      ],
+      "universalActions": [{
+          "label": "S2Q Website",
+          "openLink": "https://stg.speedtoquote.com/"
+        }, {
+          "label": "Logout",
+          "runFunction": "logout"
+      }]
+    },
+    "gmail": {
     "contextualTriggers": [
       {
         "unconditional": {},
@@ -28,5 +41,6 @@
     ],
     "primaryColor": "#2f3d8a",
     "secondaryColor": "#a2d45e"
+  }
   }
 }
