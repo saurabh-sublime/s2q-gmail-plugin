@@ -182,12 +182,7 @@ function createInputFormSection(section, event) {
     putTextWidget(section, "costPerMile", "For TMS Rates", state?.costPerMile);
     addRateSection(section, getRates());
   }
-  var image = CardService.newImage()
-    .setAltText("A nice image")
-    .setImageUrl(
-      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/powered-by-dat.png"
-    );
-  section.addWidget(image);
+
   //section.addWidget(decoratedText);
   var radioGroup = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.RADIO_BUTTON)
@@ -278,10 +273,16 @@ function addRateSection(section, rates) {
     useStorageState("rateType");
 
   section.addWidget(CardService.newDivider());
-  section.addWidget(CardService.newTextParagraph().setText("<b>TMS Rates</b>"));
+  var image = CardService.newImage()
+    .setAltText("A nice image")
+    .setImageUrl(
+      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png"
+    );
+  section.addWidget(image);
+  /*   section.addWidget(CardService.newTextParagraph().setText("<b>TMS Rates</b>"));
   section.addWidget(
     CardService.newTextParagraph().setText("<b>Rate Service:</b>" + "DAT")
-  );
+  ); */
   var rateType = getRateType();
   console.log("this is rateType", rateType);
   var buttonSet = CardService.newButtonSet()
@@ -313,12 +314,20 @@ function addRateSection(section, rates) {
   //section.addWidget(buttonSet);
   var radioGroup = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.RADIO_BUTTON)
-    .setTitle("Below option are of available rates")
+    //.setTitle("Below option are of available rates")
     .setFieldName("checkbox_field")
     .addItem("Not Selected", "none", rateType == "none" && true)
-    .addItem("$10 (Low)", "low", rateType == "low" && true)
-    .addItem("$20 (Rate)", "rate", rateType == "rate" && true)
-    .addItem("$30 (High)", "high", rateType == "high" && true)
+    .addItem(`$${rates.perMile.lowUsd} (Low)`, "low", rateType == "low" && true)
+    .addItem(
+      `$${rates.perMile.rateUsd} (Rate)`,
+      "rate",
+      rateType == "rate" && true
+    )
+    .addItem(
+      `$${rates.perMile.highUsd} (High)`,
+      "high",
+      rateType == "high" && true
+    )
     .setOnChangeAction(
       CardService.newAction()
         .setFunctionName("handleRateChange")
@@ -327,7 +336,9 @@ function addRateSection(section, rates) {
   section.addWidget(radioGroup);
   section.addWidget(
     CardService.newTextParagraph().setText(
-      "<b>Fuel Surcharge per mile: </b>" + "123"
+      "Fuel Surcharge per mile: <b>$" +
+        rates.averageFuelSurchargePerMileUsd +
+        "</b>"
     )
   );
   section.addWidget(CardService.newDivider());
