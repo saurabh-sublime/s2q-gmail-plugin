@@ -6,7 +6,7 @@
  * @returns {String}
  */
 
-function sendReplay(event) {
+/* function sendReplay(event) {
   var message = getCurrentMessage(event);
   var auth = CacheService.getUserCache().get("auth");
   // console.log('this test',JSON.stringify(auth[0]));
@@ -15,6 +15,19 @@ function sendReplay(event) {
 }
 
 function createDraft(event) {
+  var message = getCurrentMessage(event);
+  message.createDraftReply("Got your message");
+} */
+
+function sendEmail(event) {
+  var message = getCurrentMessage(event);
+  var auth = CacheService.getUserCache().get("auth");
+  // console.log('this test',JSON.stringify(auth[0]));
+  Logger.log(PropertiesService.getScriptProperties().getProperty("auths"));
+  message.reply("reply form the plugin");
+}
+
+function saveDraft(event) {
   var message = getCurrentMessage(event);
   message.createDraftReply("Got your message");
 }

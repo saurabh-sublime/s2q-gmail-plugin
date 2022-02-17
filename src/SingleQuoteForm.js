@@ -64,7 +64,8 @@ function putTextWidget(section, fieldName, title, value, suggestions) {
     .setFunctionName("onInputChange")
     .setParameters({
       variable: fieldName,
-    });
+    })
+    .setLoadIndicator(CardService.LoadIndicator.SPINNER);
   if (suggestions?.length > 0) {
     thisTextWidget.setSuggestions(
       CardService.newSuggestions().addSuggestions(suggestions)
@@ -194,21 +195,15 @@ function createInputFormSection(section, event) {
         "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
       )
     );
-  section.addWidget(decoratedText);
+  //section.addWidget(decoratedText);
   var radioGroup = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.RADIO_BUTTON)
-    .setTitle("A group of radio buttons. Only a single selection is allowed.")
+    .setTitle("Below option are of available rates")
     .setFieldName("checkbox_field")
-    .addItem("radio button one title", "radio_one_value", true)
-    .addItem("radio button two title", "radio_two_value", false)
-    .addItem("radio button three title", "radio_three_value", false);
-  section.addWidget(radioGroup);
-  var image = CardService.newImage()
-    .setAltText("A nice image")
-    .setImageUrl(
-      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
-    );
-  section.addWidget(image);
+    .addItem("$10 (Low)", "radio_one_value", true)
+    .addItem("$20 (Rate)", "radio_two_value", false)
+    .addItem("$30 (High)", "radio_three_value", false);
+  //section.addWidget(radioGroup);
   putTextWidget(section, "costPerMile", "Cost p/m", state?.costPerMile);
   putTextWidget(section, "fuelPerMile", "Fuel Srchrge p/m", state?.fuelPerMile);
   putTextWidget(section, "distance", "Distance (Miles)", state?.distance);
@@ -231,6 +226,12 @@ function createInputFormSection(section, event) {
     .addButton(getButtonWidget("Save Draft", "saveDraft", "FILLED", "#2f3d8a"))
     .addButton(getButtonWidget("Send Email", "sendEmail", "FILLED", "#2f3d8a"));
   section.addWidget(buttonSet);
+
+  /*   var imageButton = CardService.newImageButton()
+    .setAltText("An image button with an airplane icon.")
+    .setIcon(CardService.Icon.AIRPLANE)
+    .setOpenLink(CardService.newOpenLink().setUrl("https://airplane.com"));
+  section.addWidget(imageButton); */
   // for (var i = 0; i < inputNames.length; i++) {
   //   var widget = CardService.newTextInput()
   //     .setFieldName(inputNames[i])
@@ -249,15 +250,11 @@ function addRateSection(section, rates) {
     useStorageState("rateType");
 
   section.addWidget(CardService.newDivider());
-  var decoratedText = CardService.newDecoratedText()
-    .setText("Text")
-    .setTopLabel("TopLabel");
-  section.addWidget(decoratedText);
   section.addWidget(CardService.newTextParagraph().setText("<b>TMS Rates</b>"));
   section.addWidget(
     CardService.newTextParagraph().setText("<b>Rate Service:</b>" + "DAT")
   );
-  const rateType = getRateType();
+  var rateType = getRateType();
   console.log("this is rateType", rateType);
   var buttonSet = CardService.newButtonSet()
     .addButton(
@@ -285,7 +282,21 @@ function addRateSection(section, rates) {
         "#2f3d8a"
       )
     );
-  section.addWidget(buttonSet);
+  //section.addWidget(buttonSet);
+  var radioGroup = CardService.newSelectionInput()
+    .setType(CardService.SelectionInputType.RADIO_BUTTON)
+    .setTitle("Below option are of available rates")
+    .setFieldName("checkbox_field")
+    .addItem("Not Selected", "none", rateType == "none" && true)
+    .addItem("$10 (Low)", "low", rateType == "low" && true)
+    .addItem("$20 (Rate)", "rate", rateType == "rate" && true)
+    .addItem("$30 (High)", "high", rateType == "high" && true)
+    .setOnChangeAction(
+      CardService.newAction()
+        .setFunctionName("handleRateChange")
+        .setLoadIndicator(CardService.LoadIndicator.SPINNER)
+    );
+  section.addWidget(radioGroup);
   section.addWidget(
     CardService.newTextParagraph().setText(
       "<b>Fuel Surcharge per mile: </b>" + "123"
@@ -294,8 +305,32 @@ function addRateSection(section, rates) {
   section.addWidget(CardService.newDivider());
 }
 
+function handleRateChange(event) {
+  console.log("on rate change", event);
+  const [getRateType, setRateType, deleteRateType] =
+    useStorageState("rateType");
+  setRateType(event.formInput.checkbox_field);
+  const [getRates, setRates, deleteRates] = useStorageState("rates");
+  let state = getState();
+  const rates = getRates();
+  const rateIndex = { low: "lowUsd", rate: "rateUsd", high: "highUsd" };
+  if (rates.perMile) {
+    state.costPerMile =
+      rates.perMile[rateIndex[event.formInput.checkbox_field]];
+    state.fuelPerMile = rates.averageFuelSurchargePerMileUsd;
+    setState(state);
+    var newCard123 = createSingleQuoteFormCard(event);
+    console.log("card built");
+    var nav123 = CardService.newNavigation().updateCard(newCard123);
+    return CardService.newActionResponseBuilder().setNavigation(nav123).build();
+  }
+}
 function CreateImageHeader(section) {
-  var image = CardService.newImage().setAltText("S2Q Banner").setImageUrl("https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/s2q_header.png");
+  var image = CardService.newImage()
+    .setAltText("S2Q Banner")
+    .setImageUrl(
+      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/s2q_header.png"
+    );
   section.addWidget(image);
   return section;
 }
@@ -334,6 +369,13 @@ function setHigh(event) {
   const [getRateType, setRateType, deleteRateType] =
     useStorageState("rateType");
   setRateType("high");
+  var newCard123 = createSingleQuoteFormCard(event);
+  console.log("card built");
+  var nav123 = CardService.newNavigation().updateCard(newCard123);
+  return CardService.newActionResponseBuilder().setNavigation(nav123).build();
+}
+
+function rebuildCard(event) {
   var newCard123 = createSingleQuoteFormCard(event);
   console.log("card built");
   var nav123 = CardService.newNavigation().updateCard(newCard123);
