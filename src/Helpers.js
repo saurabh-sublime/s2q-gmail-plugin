@@ -72,8 +72,10 @@ function saveDraft(event) {
 
 function loginWithHttp(event) {
   var datas = {
-    email: event.formInput.email,
-    password: Utilities.base64Encode(event.formInput.password),
+    email: event.formInput.email || "sublimedev@yopmail.com",
+    password: Utilities.base64Encode(
+      event.formInput.password || "Sublimedev@123"
+    ),
   };
   var options = {
     method: "post",

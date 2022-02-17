@@ -182,19 +182,12 @@ function createInputFormSection(section, event) {
     putTextWidget(section, "costPerMile", "For TMS Rates", state?.costPerMile);
     addRateSection(section, getRates());
   }
-  var decoratedText = CardService.newDecoratedText()
-    .setText("Powered by")
-    .setTopLabel("Rate Service")
-    .setStartIcon(
-      CardService.newIconImage().setIconUrl(
-        "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
-      )
-    )
-    .setEndIcon(
-      CardService.newIconImage().setIconUrl(
-        "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
-      )
+  var image = CardService.newImage()
+    .setAltText("A nice image")
+    .setImageUrl(
+      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/powered-by-dat.png"
     );
+  section.addWidget(image);
   //section.addWidget(decoratedText);
   var radioGroup = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.RADIO_BUTTON)
@@ -226,12 +219,47 @@ function createInputFormSection(section, event) {
     .addButton(getButtonWidget("Save Draft", "saveDraft", "FILLED", "#2f3d8a"))
     .addButton(getButtonWidget("Send Email", "sendEmail", "FILLED", "#2f3d8a"));
   section.addWidget(buttonSet);
+  section.addWidget(CardService.newDivider());
+  var tmsButtonSet = CardService.newButtonSet()
+    .addButton(
+      getButtonWidget("Create Order", "saveDraft", "FILLED", "#2f3d8a")
+    )
+    .addButton(
+      getButtonWidget("Create & Post Order", "sendEmail", "FILLED", "#2f3d8a")
+    );
+  section.addWidget(tmsButtonSet);
+  section.addWidget(CardService.newDivider());
+  /*   var imageButtonAction = CardService.newAction().setFunctionName("saveDraft");
 
-  /*   var imageButton = CardService.newImageButton()
+  var imageButton1 = CardService.newImageButton()
     .setAltText("An image button with an airplane icon.")
-    .setIcon(CardService.Icon.AIRPLANE)
-    .setOpenLink(CardService.newOpenLink().setUrl("https://airplane.com"));
-  section.addWidget(imageButton); */
+    .setIconUrl(
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwjfXpzibqedObDbn7iOpry2Sj_vAHQI-dQQ&usqp=CAU"
+    )
+    .setOnClickAction(imageButtonAction);
+  section.addWidget(imageButton1);
+
+  var grid = CardService.newGrid()
+    .setTitle("My Grid")
+    .setNumColumns(2)
+    .addItem(
+      CardService.newGridItem().setImage(
+        CardService.newImageComponent()
+          .setImageUrl("https://speedtoquote.com/images/mcleod.png")
+          .setAltText("123")
+          .setCropStyle(
+            CardService.newImageCropStyle().setImageCropType(
+              CardService.ImageCropType.RECTANGLE_4_3
+            )
+          )
+
+          .setBorderStyle(CardService.newBorderStyle())
+      )
+    )
+    .addItem(CardService.newGridItem().setTitle("My item"))
+    .addItem(CardService.newGridItem().setTitle("My item"));
+
+  section.addWidget(grid); */
   // for (var i = 0; i < inputNames.length; i++) {
   //   var widget = CardService.newTextInput()
   //     .setFieldName(inputNames[i])
