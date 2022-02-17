@@ -181,19 +181,10 @@ function createInputFormSection(section, event) {
     putTextWidget(section, "costPerMile", "For TMS Rates", state?.costPerMile);
     addRateSection(section, getRates());
   }
-  var decoratedText = CardService.newDecoratedText()
-    .setText("Powered by")
-    .setTopLabel("Rate Service")
-    .setStartIcon(
-      CardService.newIconImage().setIconUrl(
-        "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
-      )
-    )
-    .setEndIcon(
-      CardService.newIconImage().setIconUrl(
-        "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
-      )
-    );
+  var image = CardService.newImage()
+    .setAltText("A nice image")
+    .setImageUrl("https://i.ibb.co/D43dQy1/powered-by-dat.png");
+  section.addWidget(image);
   section.addWidget(decoratedText);
   var radioGroup = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.RADIO_BUTTON)
@@ -203,12 +194,6 @@ function createInputFormSection(section, event) {
     .addItem("radio button two title", "radio_two_value", false)
     .addItem("radio button three title", "radio_three_value", false);
   section.addWidget(radioGroup);
-  var image = CardService.newImage()
-    .setAltText("A nice image")
-    .setImageUrl(
-      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/DAT.png"
-    );
-  section.addWidget(image);
   putTextWidget(section, "costPerMile", "Cost p/m", state?.costPerMile);
   putTextWidget(section, "fuelPerMile", "Fuel Srchrge p/m", state?.fuelPerMile);
   putTextWidget(section, "distance", "Distance (Miles)", state?.distance);
@@ -295,7 +280,11 @@ function addRateSection(section, rates) {
 }
 
 function CreateImageHeader(section) {
-  var image = CardService.newImage().setAltText("S2Q Banner").setImageUrl("https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/s2q_header.png");
+  var image = CardService.newImage()
+    .setAltText("S2Q Banner")
+    .setImageUrl(
+      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/s2q_header.png"
+    );
   section.addWidget(image);
   return section;
 }
