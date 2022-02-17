@@ -183,7 +183,9 @@ function createInputFormSection(section, event) {
   }
   var image = CardService.newImage()
     .setAltText("A nice image")
-    .setImageUrl("https://i.ibb.co/D43dQy1/powered-by-dat.png");
+    .setImageUrl(
+      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/powered-by-dat.png"
+    );
   section.addWidget(image);
   section.addWidget(decoratedText);
   var radioGroup = CardService.newSelectionInput()
