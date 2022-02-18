@@ -35,6 +35,7 @@ const recalculateDetails = (event) => {
 
   const quoteData = getState();
   var { locationFrom, locationTo, equipment } = quoteData;
+  fetchRates(locationFrom, locationTo, equipment);
   //let { locationFromBackup, locationToBackup, equipmentId } = quoteBackup;
   //setLoading(true);
   if (locationFrom && locationTo && equipment) {
@@ -174,12 +175,13 @@ const fetchEquipmentList = () => {
 
 const fetchRates = (locationFrom, locationTo, equipment) => {
   console.log("fetching rate begins");
+  const [getRates, setRates, deleteRates] = useStorageState("rates");
   var equipmentAllow = ["Tractor", "Reefer", "Flatbed"];
   if (equipmentAllow.includes(equipment?.name.trim())) {
     console.log("fetching rates");
     const [getTmsRates, setTmsRates, deleteTmsRates] =
       useStorageState("tmsRates");
-    const [getRates, setRates, deleteRates] = useStorageState("rates");
+
     const datas = {
       equipmentName: equipment.name,
       locationFrom: locationFrom,
@@ -217,6 +219,8 @@ const fetchRates = (locationFrom, locationTo, equipment) => {
         console.log("error while fetching rates", error);
       }
     }
+  } else {
+    setRates(null);
   }
   console.log("fetching rates done");
 };

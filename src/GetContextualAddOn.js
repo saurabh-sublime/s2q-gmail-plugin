@@ -93,6 +93,7 @@ function getContextualAddOn(event) {
   var card;
   //console.log("this", units1?.access?.token);
   if (accessToken) {
+    fetchRates(state.locationFrom, state.locationTo, state.equipment);
     card = createSingleQuoteFormCard(event);
     return card;
   } else {

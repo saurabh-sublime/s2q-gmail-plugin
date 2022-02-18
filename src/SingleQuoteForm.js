@@ -12,12 +12,12 @@ function createSingleQuoteFormCard(event) {
   var subjectAndSenderSection = CardService.newCardSection();
   subjectAndSenderSection.addWidget(
     CardService.newTextParagraph().setText(
-      "<b> <strong>Pick up request: </strong>" + subject + "</b>"
+      "<b> <strong>Pick up request: </strong></b>" + subject
     )
   );
   subjectAndSenderSection.addWidget(
     CardService.newTextParagraph().setText(
-      "<b> <strong>Sender email: </strong>" + updatedFrom + "</b>"
+      "<b> <strong>Sender email: </strong></b>" + updatedFrom
     )
   );
   card.addSection(subjectAndSenderSection);
@@ -40,6 +40,9 @@ function onInputChange(event) {
       tempState
     );
     setState(updatedTempState);
+    if (variable === "equipmentName") {
+      recalculateDetails(event);
+    }
   }
 
   var newCard123 = createSingleQuoteFormCard(event);
@@ -134,7 +137,6 @@ function getLocationSuggestionList() {
 }
 function createInputFormSection(section, event) {
   var state = getState();
-  fetchRates(state.locationFrom, state.locationTo, state.equipment);
   console.log("rebuilding with", state);
   putTextWidget(
     section,
@@ -215,6 +217,12 @@ function createInputFormSection(section, event) {
     .addButton(getButtonWidget("Send Email", "sendEmail", "FILLED", "#2f3d8a"));
   section.addWidget(buttonSet);
   section.addWidget(CardService.newDivider());
+  var image = CardService.newImage()
+    .setAltText("A nice image")
+    .setImageUrl(
+      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/mcleod.png"
+    );
+  section.addWidget(image);
   var tmsButtonSet = CardService.newButtonSet()
     .addButton(
       getButtonWidget("Create Order", "saveDraft", "FILLED", "#2f3d8a")
