@@ -29,8 +29,8 @@
           "openLink": "https://stg.speedtoquote.com/"
         },
         {
-          "label": "Logout",
-          "runFunction": "logout"
+          "label": "Settings",
+          "runFunction": "settings"
         }
       ]
     },
