@@ -29,9 +29,6 @@ function createSingleQuoteFormCard(event) {
 
 function onInputChange(event) {
   var variable = event.parameters.variable;
-  //state[variable] = event.formInput[variable];
-  //console.log(getState());
-  //console.log("the real state1", getState().locationFrom);
   var tempState = getState();
   tempState[variable] = event.formInput[variable];
   if (calcFunctions[variable]) {
@@ -44,7 +41,6 @@ function onInputChange(event) {
       recalculateDetails(event);
     }
   }
-
   var newCard123 = createSingleQuoteFormCard(event);
   console.log("card built");
   var nav123 = CardService.newNavigation().updateCard(newCard123);
@@ -74,7 +70,6 @@ function putTextWidget(section, fieldName, title, value, suggestions) {
       CardService.newSuggestions().addSuggestions(suggestions)
     );
   }
-
   thisTextWidget.setOnChangeAction(onInputChangeAction);
   section.addWidget(thisTextWidget);
 }
@@ -115,27 +110,12 @@ const getEquipmentSuggestions = () => {
   return { equipmentList: equipmentList, equipmentObject: equipmentObject };
 };
 
-var vx;
-
-/* function inputChanged123(event) {
-  var variable = event.parameters.variable;
-  vx = "value changed";
-  console.log("this", event);
-  state[variable] = event.formInput[variable];
-  var newCard123 = createSingleQuoteFormCard(event, state);
-  var nav123 = CardService.newNavigation().updateCard(newCard123);
-  //return;
-  //var nav = CardService.newNavigation().pushCard(newCard);
-  return CardService.newActionResponseBuilder().setNavigation(nav123).build();
-  //payload();
-} */
-
-function getLocationSuggestionList() {
-  const state = getState();
-  const locationFromList = [];
-  const locationToList = [];
-}
 function createInputFormSection(section, event) {
+  const [getIsOrderPosted, setIsOrderPosted, deleteIsOrderPosted] =
+    useStorageState("isOrderPosted");
+  const isOrderPosted = getIsOrderPosted();
+  //const isOrderPosted = true;
+  console.log(isOrderPosted);
   var state = getState();
   console.log("rebuilding with", state);
   putTextWidget(
@@ -163,7 +143,7 @@ function createInputFormSection(section, event) {
   var pickupTimeWidget = CardService.newDateTimePicker()
     .setTitle("Pickup time")
     .setFieldName("pickupTime")
-    .setValueInMsSinceEpoch(1514775600)
+    .setValueInMsSinceEpoch(Date.now())
     .setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(
       CardService.newAction().setFunctionName("handleDateTimeChange")
@@ -173,7 +153,7 @@ function createInputFormSection(section, event) {
   var deliveryTimeWidget = CardService.newDateTimePicker()
     .setTitle("Delivery time")
     .setFieldName("deliveryTime")
-    .setValueInMsSinceEpoch(1514775600)
+    .setValueInMsSinceEpoch(Date.now())
     .setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(
       CardService.newAction().setFunctionName("handleDateTimeChange")
@@ -184,16 +164,6 @@ function createInputFormSection(section, event) {
     putTextWidget(section, "costPerMile", "For TMS Rates", state?.costPerMile);
     addRateSection(section, getRates());
   }
-
-  //section.addWidget(decoratedText);
-  var radioGroup = CardService.newSelectionInput()
-    .setType(CardService.SelectionInputType.RADIO_BUTTON)
-    .setTitle("Below option are of available rates")
-    .setFieldName("checkbox_field")
-    .addItem("$10 (Low)", "radio_one_value", true)
-    .addItem("$20 (Rate)", "radio_two_value", false)
-    .addItem("$30 (High)", "radio_three_value", false);
-  //section.addWidget(radioGroup);
   putTextWidget(section, "costPerMile", "Cost p/m", state?.costPerMile);
   putTextWidget(section, "fuelPerMile", "Fuel Srchrge p/m", state?.fuelPerMile);
   putTextWidget(section, "distance", "Distance (Miles)", state?.distance);
@@ -225,53 +195,23 @@ function createInputFormSection(section, event) {
   section.addWidget(image);
   var tmsButtonSet = CardService.newButtonSet()
     .addButton(
-      getButtonWidget("Create Order", "saveDraft", "FILLED", "#2f3d8a")
+      getButtonWidget(
+        "Create Order",
+        "createTmsOrder",
+        "FILLED",
+        isOrderPosted ? "#c2c2c2" : "#2f3d8a"
+      )
     )
     .addButton(
-      getButtonWidget("Create & Post Order", "sendEmail", "FILLED", "#2f3d8a")
+      getButtonWidget(
+        "Create & Post Order",
+        "sendTmsOrder",
+        "FILLED",
+        isOrderPosted ? "#c2c2c2" : "#2f3d8a"
+      )
     );
   section.addWidget(tmsButtonSet);
   section.addWidget(CardService.newDivider());
-  /*   var imageButtonAction = CardService.newAction().setFunctionName("saveDraft");
-
-  var imageButton1 = CardService.newImageButton()
-    .setAltText("An image button with an airplane icon.")
-    .setIconUrl(
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwjfXpzibqedObDbn7iOpry2Sj_vAHQI-dQQ&usqp=CAU"
-    )
-    .setOnClickAction(imageButtonAction);
-  section.addWidget(imageButton1);
-
-  var grid = CardService.newGrid()
-    .setTitle("My Grid")
-    .setNumColumns(2)
-    .addItem(
-      CardService.newGridItem().setImage(
-        CardService.newImageComponent()
-          .setImageUrl("https://speedtoquote.com/images/mcleod.png")
-          .setAltText("123")
-          .setCropStyle(
-            CardService.newImageCropStyle().setImageCropType(
-              CardService.ImageCropType.RECTANGLE_4_3
-            )
-          )
-
-          .setBorderStyle(CardService.newBorderStyle())
-      )
-    )
-    .addItem(CardService.newGridItem().setTitle("My item"))
-    .addItem(CardService.newGridItem().setTitle("My item"));
-
-  section.addWidget(grid); */
-  // for (var i = 0; i < inputNames.length; i++) {
-  //   var widget = CardService.newTextInput()
-  //     .setFieldName(inputNames[i])
-  //     .setTitle(inputNames[i]);
-  //   if (opt_prefills && opt_prefills[i]) {
-  //     widget.setValue(opt_prefills[i]);
-  //   }
-  //   section.addWidget(widget);
-  // }
   return section;
 }
 
@@ -287,39 +227,7 @@ function addRateSection(section, rates) {
       "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png"
     );
   section.addWidget(image);
-  /*   section.addWidget(CardService.newTextParagraph().setText("<b>TMS Rates</b>"));
-  section.addWidget(
-    CardService.newTextParagraph().setText("<b>Rate Service:</b>" + "DAT")
-  ); */
   var rateType = getRateType();
-  console.log("this is rateType", rateType);
-  var buttonSet = CardService.newButtonSet()
-    .addButton(
-      getButtonWidget(
-        "$10 (Low)",
-        "setLow",
-        rateType == "low" && "FILLED",
-        "#2f3d8a",
-        "#f8f8f8"
-      )
-    )
-    .addButton(
-      getButtonWidget(
-        "$20 (Rate)",
-        "setRate",
-        rateType == "rate" && "FILLED",
-        "#2f3d8a"
-      )
-    )
-    .addButton(
-      getButtonWidget(
-        "$30 (High)",
-        "setHigh",
-        rateType == "high" && "FILLED",
-        "#2f3d8a"
-      )
-    );
-  //section.addWidget(buttonSet);
   var radioGroup = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.RADIO_BUTTON)
     //.setTitle("Below option are of available rates")
@@ -353,7 +261,6 @@ function addRateSection(section, rates) {
 }
 
 function handleRateChange(event) {
-  console.log("on rate change", event);
   const [getRateType, setRateType, deleteRateType] =
     useStorageState("rateType");
   setRateType(event.formInput.checkbox_field);
@@ -387,8 +294,6 @@ function logout() {
   PropertiesService.getScriptProperties().deleteProperty("ACCESS_TOKEN");
   var newCard = createLoginCard().build();
   var nav = CardService.newNavigation().pushCard(newCard);
-  //return;
-  //var nav = CardService.newNavigation().pushCard(newCard);
   return CardService.newActionResponseBuilder().setNavigation(nav).build();
 }
 

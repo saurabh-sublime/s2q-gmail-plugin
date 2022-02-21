@@ -14,7 +14,8 @@
     "https://google.com/",
     "https://stg.speedtoquote.com/",
     "https://stg.speedtoquote.com/api/front-app/parseemail",
-    "https://www.dat.com/wp-content/uploads/2020/11/DAT-FA-131x22-1.svg"
+    "https://www.dat.com/wp-content/uploads/2020/11/DAT-FA-131x22-1.svg",
+    "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"
   ],
   "runtimeVersion": "V8",
   "addOns": {

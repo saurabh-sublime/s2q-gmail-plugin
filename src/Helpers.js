@@ -5,70 +5,26 @@
  * @param {Message} message An email message.
  * @returns {String}
  */
-
-/* function sendReplay(event) {
-  var message = getCurrentMessage(event);
-  var auth = CacheService.getUserCache().get("auth");
-  // console.log('this test',JSON.stringify(auth[0]));
-  Logger.log(PropertiesService.getScriptProperties().getProperty("auths"));
-  message.reply("reply form the plugin");
-}
-
-function createDraft(event) {
-  var message = getCurrentMessage(event);
-  message.createDraftReply("Got your message");
-} */
-
 function sendEmail(event) {
   var message = getCurrentMessage(event);
   var auth = CacheService.getUserCache().get("auth");
   // console.log('this test',JSON.stringify(auth[0]));
+  const draftEmail = fillMailTemplate();
   Logger.log(PropertiesService.getScriptProperties().getProperty("auths"));
-  message.reply("reply form the plugin");
+  message.reply(draftEmail);
 }
 
 function saveDraft(event) {
   var message = getCurrentMessage(event);
-  message.createDraftReply("Got your message");
+  const draftEmail = fillMailTemplate();
+  console.log("draft email", draftEmail);
+
+  message.createDraftReply("incapable of HTML", {
+    htmlBody: draftEmail,
+    noReply: true,
+  });
+  //message.createDraftReply(draftEmail);
 }
-
-/* function sendApiRequest(event) {
-  //log the event
-  console.log(JSON.stringify(event));
-  // var query = '"Apps Script" stars:">=100"';
-  // var url = 'https://api.github.com/search/repositories'
-  //   + '?sort=stars'
-  //   + '&q=' + encodeURIComponent(query);
-
-  // var response = UrlFetchApp.fetch(url, { 'muteHttpExceptions': true });
-  // Logger.log(response);
-  // var json = response.getContentText();
-  // var data = JSON.parse(json);
-
-  // Make a POST request with a JSON payload.
-  var datas = {
-    email: "sublime@gmail.com",
-    password: "U3VibGltZUAxMjM=",
-  };
-  var options = {
-    method: "post",
-    contentType: "application/json",
-    // Convert the JavaScript object to a JSON string.
-    payload: JSON.stringify(datas),
-  };
-  var respons = UrlFetchApp.fetch(
-    "https://stg.speedtoquote.com/api/front-app/auth",
-    options
-  );
-  var json = respons.getContentText();
-  var data = JSON.parse(json);
-  CacheService.getUserCache().put("auth", data);
-  Logger.log(data);
-  PropertiesService.getScriptProperties().setProperty("auths", data);
-  return CardService.newActionResponseBuilder()
-    .setNotification(CardService.newNotification().setText("Request done"))
-    .build();
-} */
 
 function loginWithHttp(event) {
   var datas = {

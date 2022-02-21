@@ -13,17 +13,12 @@ function createLoginFormSection(section) {
     .setFieldName("email")
     .setTitle("Email")
     .setValue("");
-  var inputChangedAction =
-    CardService.newAction().setFunctionName("inputChanged");
-  emailWidget.setOnChangeAction(inputChangedAction);
   section.addWidget(emailWidget);
-
   var passwordWidget = CardService.newTextInput()
     .setFieldName("password")
     .setTitle("Password")
     .setValue("");
   section.addWidget(passwordWidget);
-
   return section;
 }
 
@@ -36,15 +31,9 @@ function CreateLoginButton(section) {
   return section;
 }
 
-function inputChanged(e) {
-  email = "entered email";
-  Logger.log("logging in");
-}
-
 function login(event) {
   var userProperties = PropertiesService.getUserProperties();
   var authData = loginWithHttp(event);
-  //console.log(loggedInData);
   userProperties.setProperty("ACCESS_TOKEN", authData.accessToken);
   PropertiesService.getScriptProperties().setProperty(
     "ACCESS_TOKEN",
@@ -56,18 +45,8 @@ function login(event) {
   );
   fetchEquipmentList();
   parseEmail(event);
-
-  var message = getCurrentMessage1(event);
-  var subject = message.getSubject();
-  var from = message.getFrom();
-  var body = message.getPlainBody();
-  var messageId = message.getId();
-  //var newCard = createInputFormCard();
-  //var nav = CardService.newNavigation().pushCard(newCard);
-  //createInputFormCard()
+  checkTmsOrder(event);
   var newCard = createSingleQuoteFormCard(event);
   var nav = CardService.newNavigation().updateCard(newCard);
-  //return;
-  //var nav = CardService.newNavigation().pushCard(newCard);
   return CardService.newActionResponseBuilder().setNavigation(nav).build();
 }

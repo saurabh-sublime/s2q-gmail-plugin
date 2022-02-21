@@ -52,7 +52,7 @@ var state = {
     minimumCost: "",
   },
 };
-var isInitiated;
+
 function setState(state) {
   PropertiesService.getUserProperties().setProperty(
     "STATE1",
@@ -66,16 +66,10 @@ function getState() {
 }
 
 function getContextualAddOn(event) {
-  console.log("this is the new code");
-  state.costPerMile = "changed";
   setState(state);
   deleteRootProperty();
   setRootProperty({});
   PropertiesService.getUserProperties().deleteProperty("isInitiated");
-  isInitiated = false;
-  var userProperties = PropertiesService.getUserProperties();
-  var units = userProperties.getProperty("AUTH_DATA");
-  var units1 = PropertiesService.getScriptProperties().getProperty("auths");
   var accessToken =
     PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
   var message = getCurrentMessage(event);
@@ -83,17 +77,15 @@ function getContextualAddOn(event) {
   var from = message.getFrom();
   var body = message.getPlainBody();
   var meesageId = message.getId();
-  var fromEmail = message.getFrom();
-  // var id=message.get
   if (!PropertiesService.getUserProperties().getProperty("isInitiated")) {
     parseEmail(event);
     fetchEquipmentList();
     console.log("parsing again");
   }
   var card;
-  //console.log("this", units1?.access?.token);
   if (accessToken) {
     fetchRates(state.locationFrom, state.locationTo, state.equipment);
+    checkTmsOrder(event);
     card = createSingleQuoteFormCard(event);
     return card;
   } else {
@@ -114,13 +106,6 @@ function getCurrentMessage(event) {
     GmailApp.setCurrentMessageAccessToken(accessToken);
     return GmailApp.getMessageById(messageId);
   }
-}
-
-function getCurrentMessage1(event) {
-  var accessToken = event.gmail?.accessToken;
-  var messageId = event.gmail?.messageId;
-  GmailApp.setCurrentMessageAccessToken(accessToken);
-  return GmailApp.getMessageById(messageId);
 }
 
 function updateStateWithParsedData(parsedData) {

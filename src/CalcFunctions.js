@@ -1,3 +1,4 @@
+//Calc Functions
 var calcFunctions = {
   equipmentName: onEquipmentChange,
   locationFrom: onLocationFromChange,
@@ -11,21 +12,26 @@ var calcFunctions = {
   cost: onCostChange,
 };
 
+//On Equipment Change
 function onEquipmentChange(value, state) {
   var equipmentObject = getEquipmentSuggestions().equipmentObject;
   state.equipment = equipmentObject[value];
   return state;
 }
 
+//On pickup location change
 function onLocationFromChange(value, state) {
   state.locationFrom = value;
   return state;
 }
 
+//On delivery location change
 function onLocationToChange(value, state) {
   state.locationTo = value;
   return state;
 }
+
+//On cost per mile change
 function onCostPerMileChange(value, state) {
   var {
     margin,
@@ -38,7 +44,6 @@ function onCostPerMileChange(value, state) {
     equipment,
     distance,
   } = state;
-  //console.log("fuel from quote data", fuelPerMile);
   const formattedValue = Number(Number(value).toFixed(2));
   const totalCost = Number(formattedValue) * Number(distance);
 
@@ -51,14 +56,6 @@ function onCostPerMileChange(value, state) {
     distance
   );
 
-  /*   setQuoteData({
-    ...quoteData,
-    costPerMile: formatNumber(formattedValue),
-    cost: finalCost,
-    marginProfit,
-    totalCost: updatedTotalCost,
-  }); */
-
   state.costPerMile = formatNumber(formattedValue);
   state.cost = finalCost;
   state.marginProfit = marginProfit;
@@ -66,6 +63,7 @@ function onCostPerMileChange(value, state) {
   return state;
 }
 
+//On fuel per mile change
 function onFuelPerMileChange(value, state) {
   const {
     distance,
@@ -78,7 +76,6 @@ function onFuelPerMileChange(value, state) {
   } = state;
 
   const formattedValue = Number(Number(value).toFixed(2));
-
   const totalCost = Number(distance) * Number(costPerMile);
   const finalCost =
     equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
@@ -95,6 +92,7 @@ function onFuelPerMileChange(value, state) {
   return state;
 }
 
+//On distance change
 function onDistanceChange(value, state) {
   const {
     costPerMile,
@@ -128,6 +126,7 @@ function onDistanceChange(value, state) {
   state.transitTime = formatNumber(updatedTime);
 }
 
+//On speed change
 function onSpeedChange(value, state) {
   const { distance, equipment } = state;
   const formattedValue = Number(Number(value));
@@ -139,6 +138,7 @@ function onSpeedChange(value, state) {
   return state;
 }
 
+//On margin profit change
 function onMarginProfitChange(value, state) {
   const { marginProfit, cost, marginProfitBackup, distance, fuelPerMile } =
     state;
@@ -156,6 +156,7 @@ function onMarginProfitChange(value, state) {
   return state;
 }
 
+//On margin change
 function onMarginChange(value, state) {
   const {
     cost,
@@ -178,6 +179,7 @@ function onMarginChange(value, state) {
   return state;
 }
 
+//On cost change
 function onCostChange(value, state) {
   const {
     margin,
