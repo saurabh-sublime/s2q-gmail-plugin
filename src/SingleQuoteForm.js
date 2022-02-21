@@ -219,7 +219,8 @@ function createInputFormSection(section, event) {
 function getActiveRateTmsImage(activeTmsRate, rates) {
   const DAT_PER_MILE =
     "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png";
-  const DAT_PER_TRIP = "";
+  const DAT_PER_TRIP =
+    "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpertrip.png";
 
   if (activeTmsRate?.name === "DAT" && rates?.perMile) {
     return DAT_PER_MILE;
@@ -227,14 +228,15 @@ function getActiveRateTmsImage(activeTmsRate, rates) {
   if (activeTmsRate?.name === "DAT" && !rates?.perMile) {
     return DAT_PER_TRIP;
   }
-  return "";
+  return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png";
 }
 
 function getActiveTmsImage() {
   const [getActiveTms, setActiveTms, deleteActiveTms] =
     useStorageState("activeTms");
   const activeTms = getActiveTms();
-  const FULLCIRCLE = "";
+  const FULLCIRCLE =
+    "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/fullCircle.png";
   const MCLEOD =
     "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/mcleod.png";
 
