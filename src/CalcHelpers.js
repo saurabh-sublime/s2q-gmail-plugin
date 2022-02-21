@@ -389,6 +389,49 @@ function checkTmsOrder(event) {
   }
 }
 
+function getActiveTms(event) {
+  const [getActiveTms, setActiveTms, deleteActiveTms] =
+    useStorageState("activeTms");
+  const [getActiveTmsRate, setActiveTmsRate, deleteActiveTmsRate] =
+    useStorageState("activeTmsRate");
+  var accessToken =
+    PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+  var options = {
+    method: "get",
+    contentType: "application/json",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    //payload: JSON.stringify(datas),
+  };
+  try {
+    var respons = UrlFetchApp.fetch(
+      "https://stg.speedtoquote.com/api/tms/active",
+      options
+    );
+
+    var json = respons.getContentText();
+    var data = JSON.parse(json);
+    console.log("active tms is", data);
+    setActiveTms(data?.activeTms);
+  } catch (e) {
+    console.log("error occured while checking active tms", e);
+  }
+  try {
+    var respons = UrlFetchApp.fetch(
+      "https://stg.speedtoquote.com/api/tms-rate/active",
+      options
+    );
+
+    var json = respons.getContentText();
+    var data = JSON.parse(json);
+    console.log("active tms rate is", data);
+    setActiveTmsRate(data?.activeRate);
+  } catch (e) {
+    console.log("error occured while checking active tms", e);
+  }
+}
+
 function fillMailTemplate() {
   const quoteData = getState();
   try {
@@ -430,8 +473,8 @@ function fillMailTemplate() {
             toDate.tz(tzTo).format("z")
           : undefined,
       });
-      //const templateHtml = convertToHTML(filledTemplate);
-      const templateHtml = filledTemplate;
+      const templateHtml = convertToHtml(filledTemplate);
+      //const templateHtml = filledTemplate;
       return templateHtml;
       // createDraft(templateHtml);
     }
@@ -492,4 +535,33 @@ function fillTemplate(mailPattern, mailModel) {
     }
   }
   return mailPattern;
+}
+
+function convertToHtml(filledTemplate) {
+  var datas = {
+    markDown: filledTemplate,
+  };
+  var accessToken =
+    PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+  var options = {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    payload: JSON.stringify(datas),
+  };
+  try {
+    var respons = UrlFetchApp.fetch(
+      "https://stg.speedtoquote.com/api/front-app/convertToHtml",
+      options
+    );
+
+    var json = respons.getContentText();
+    var data = JSON.parse(json);
+    console.log("results of convert to html api", data?.html);
+    return data.html;
+  } catch (e) {
+    console.log("error occured while checking tms order", e);
+  }
 }

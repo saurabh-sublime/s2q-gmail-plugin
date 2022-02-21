@@ -110,3 +110,13 @@ function parseEmail(event) {
     }
   }
 }
+
+function consoleLogValues() {
+  console.log("Logging values");
+  //Storage State Variables
+  //equipmentList
+  //tmsRates
+  //isOrderPosted
+  //equipmentList
+  //rateType
+}

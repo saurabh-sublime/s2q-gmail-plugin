@@ -189,9 +189,7 @@ function createInputFormSection(section, event) {
   section.addWidget(CardService.newDivider());
   var image = CardService.newImage()
     .setAltText("A nice image")
-    .setImageUrl(
-      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/mcleod.png"
-    );
+    .setImageUrl(getActiveTmsImage());
   section.addWidget(image);
   var tmsButtonSet = CardService.newButtonSet()
     .addButton(
@@ -212,20 +210,54 @@ function createInputFormSection(section, event) {
     );
   section.addWidget(tmsButtonSet);
   section.addWidget(CardService.newDivider());
+  section.addWidget(
+    getButtonWidget("Console log", "consoleLogValues", "FILLED", "#a2d45e")
+  );
   return section;
 }
 
+function getActiveRateTmsImage(activeTmsRate, rates) {
+  const DAT_PER_MILE =
+    "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png";
+  const DAT_PER_TRIP = "";
+
+  if (activeTmsRate?.name === "DAT" && rates?.perMile) {
+    return DAT_PER_MILE;
+  }
+  if (activeTmsRate?.name === "DAT" && !rates?.perMile) {
+    return DAT_PER_TRIP;
+  }
+  return "";
+}
+
+function getActiveTmsImage() {
+  const [getActiveTms, setActiveTms, deleteActiveTms] =
+    useStorageState("activeTms");
+  const activeTms = getActiveTms();
+  const FULLCIRCLE = "";
+  const MCLEOD =
+    "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/mcleod.png";
+
+  if (activeTms?.name === "FullCircle") {
+    return FULLCIRCLE;
+  }
+  if (activeTms?.name === "McLeod") {
+    return MCLEOD;
+  }
+  return "";
+}
 function addRateSection(section, rates) {
   console.log("these are received rates", rates);
   const [getRateType, setRateType, deleteRateType] =
     useStorageState("rateType");
+  const [getActiveTmsRate, setActiveTmsRate, deleteActiveTmsRate] =
+    useStorageState("activeTmsRate");
+  const activeTmsRate = getActiveTmsRate();
 
   section.addWidget(CardService.newDivider());
   var image = CardService.newImage()
     .setAltText("A nice image")
-    .setImageUrl(
-      "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png"
-    );
+    .setImageUrl(getActiveRateTmsImage(activeTmsRate, rates));
   section.addWidget(image);
   var rateType = getRateType();
   var radioGroup = CardService.newSelectionInput()

@@ -79,11 +79,12 @@ function getContextualAddOn(event) {
   var meesageId = message.getId();
   if (!PropertiesService.getUserProperties().getProperty("isInitiated")) {
     parseEmail(event);
-    fetchEquipmentList();
     console.log("parsing again");
   }
   var card;
   if (accessToken) {
+    getActiveTms();
+    fetchEquipmentList();
     fetchRates(state.locationFrom, state.locationTo, state.equipment);
     checkTmsOrder(event);
     card = createSingleQuoteFormCard(event);
