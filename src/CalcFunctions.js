@@ -10,6 +10,8 @@ var calcFunctions = {
   margin: onMarginChange,
   marginProfit: onMarginProfitChange,
   cost: onCostChange,
+  pickupTime: onPickupTimeChange,
+  deliveryTime: onDeliveryTimeChange,
 };
 
 //On Equipment Change
@@ -207,4 +209,15 @@ function onCostChange(value, state) {
   state.marginProfit = marginProfit;
   state.totalCost = totalCost;
   state.cost = formattedValue;
+  return state;
+}
+
+function onPickupTimeChange(value, state) {
+  state.pickupTime = value.msSinceEpoch;
+  return state;
+}
+
+function onDeliveryTimeChange(vakue, state) {
+  state.deliveryTime = value.msSinceEpoch;
+  return state;
 }

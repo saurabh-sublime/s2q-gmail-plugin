@@ -32,6 +32,8 @@ var state = {
   totalCost: 0,
   marginProfit: 0,
   margin: 0,
+  pickupTime: Date.now(),
+  deliveryTime: Date.now(),
   costPerMile: 0,
   costPerMileBackUp: "",
   fuelPerMile: 0,

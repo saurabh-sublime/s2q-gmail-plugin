@@ -6,7 +6,7 @@ function createSettingsCard() {
   card.addSection(imageHeader);
   card.addSection(authButton);
   card.addSection(cancelButton);
-  return card;
+  return card.build();
 }
 
 function CreateAuthButton(section) {
@@ -15,7 +15,7 @@ function CreateAuthButton(section) {
   if (accessToken) {
     section.addWidget(getButtonWidget("Logout", "logout", "FILLED", "#2f3d8a"));
   } else {
-    section.addWidget(getButtonWidget("Login", "login", "FILLED", "#2f3d8a"));
+    section.addWidget(getButtonWidget("Login", "logout", "FILLED", "#2f3d8a"));
   }
   return section;
 }
@@ -38,6 +38,8 @@ function CreateImageHeader(section) {
 // Settings Card for Login/Logout Button
 function settings() {
   var newCard = createSettingsCard().build();
-  var nav = CardService.newNavigation().pushCard(newCard);
+  var nav = CardService.newNavigation().updateCard(newCard);
   return CardService.newActionResponseBuilder().setNavigation(nav).build();
 }
+
+function navigateToLogin(event) {}

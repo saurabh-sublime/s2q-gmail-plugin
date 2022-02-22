@@ -99,7 +99,7 @@ function parseEmail(event) {
     PropertiesService.getUserProperties().setProperty("isInitiated", true);
     updateStateWithParsedData(data);
     var newCard = createSingleQuoteFormCard(event);
-    var nav = CardService.newNavigation().pushCard(newCard);
+    var nav = CardService.newNavigation().updateCard(newCard);
     //return;
     //var nav = CardService.newNavigation().pushCard(newCard);
     return CardService.newActionResponseBuilder().setNavigation(nav).build();
@@ -119,4 +119,6 @@ function consoleLogValues() {
   //isOrderPosted
   //equipmentList
   //rateType
+  const state = getState();
+  console.log("current quote data", state);
 }

@@ -50,7 +50,7 @@ function onInputChange(event) {
 function rebuild(event) {
   CardService.newActionResponseBuilder()
     .setNavigation(
-      CardService.newNavigation().pushCard(createSingleQuoteFormCard(event))
+      CardService.newNavigation().updateCard(createSingleQuoteFormCard(event))
     )
     .build();
 }
@@ -143,21 +143,32 @@ function createInputFormSection(section, event) {
   var pickupTimeWidget = CardService.newDateTimePicker()
     .setTitle("Pickup time")
     .setFieldName("pickupTime")
-    .setValueInMsSinceEpoch(Date.now())
+    .setValueInMsSinceEpoch(state?.pickupTime)
     .setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(
-      CardService.newAction().setFunctionName("handleDateTimeChange")
+      CardService.newAction()
+        .setFunctionName("onInputChange")
+        .setParameters({
+          variable: "pickupTime",
+        })
+        .setLoadIndicator(CardService.LoadIndicator.SPINNER)
     );
   section.addWidget(pickupTimeWidget);
 
   var deliveryTimeWidget = CardService.newDateTimePicker()
     .setTitle("Delivery time")
     .setFieldName("deliveryTime")
-    .setValueInMsSinceEpoch(Date.now())
+    .setValueInMsSinceEpoch(state?.deliveryTime)
     .setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(
-      CardService.newAction().setFunctionName("handleDateTimeChange")
+      CardService.newAction()
+        .setFunctionName("onInputChange")
+        .setParameters({
+          variable: "deliveryTime",
+        })
+        .setLoadIndicator(CardService.LoadIndicator.SPINNER)
     );
+
   section.addWidget(deliveryTimeWidget);
   const [getRates, setRates, deleteRates] = useStorageState("rates");
   if (getRates()) {
@@ -246,7 +257,7 @@ function getActiveTmsImage() {
   if (activeTms?.name === "McLeod") {
     return MCLEOD;
   }
-  return "";
+  return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/mcleod.png";
 }
 function addRateSection(section, rates) {
   console.log("these are received rates", rates);
@@ -327,7 +338,7 @@ function logout() {
   PropertiesService.getScriptProperties().deleteProperty("auths");
   PropertiesService.getScriptProperties().deleteProperty("ACCESS_TOKEN");
   var newCard = createLoginCard().build();
-  var nav = CardService.newNavigation().pushCard(newCard);
+  var nav = CardService.newNavigation().updateCard(newCard);
   return CardService.newActionResponseBuilder().setNavigation(nav).build();
 }
 
