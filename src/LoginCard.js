@@ -33,20 +33,56 @@ function CreateLoginButton(section) {
 
 function login(event) {
   var userProperties = PropertiesService.getUserProperties();
-  var authData = loginWithHttp(event);
-  userProperties.setProperty("ACCESS_TOKEN", authData.accessToken);
-  PropertiesService.getScriptProperties().setProperty(
-    "ACCESS_TOKEN",
-    authData?.accessToken
-  );
-  PropertiesService.getScriptProperties().setProperty(
-    "REFRESH_TOKEN",
-    authData?.refreshToken
-  );
-  fetchEquipmentList();
-  parseEmail(event);
-  checkTmsOrder(event);
-  var newCard = createSingleQuoteFormCard(event);
-  var nav = CardService.newNavigation().updateCard(newCard);
-  return CardService.newActionResponseBuilder().setNavigation(nav).build();
+  try {
+    var authData = loginWithHttp(event);
+    //userProperties.setProperty("ACCESS_TOKEN", authData.accessToken);
+    PropertiesService.getUserProperties().setProperty(
+      "ACCESS_TOKEN",
+      authData?.accessToken
+    );
+    console.log("this is auth data", authData);
+    PropertiesService.getUserProperties().setProperty(
+      "REFRESH_TOKEN",
+      authData?.refreshToken
+    );
+    getActiveTms();
+    fetchEquipmentList();
+    parseEmail(event);
+    checkTmsOrder(event);
+    var newCard = createSingleQuoteFormCard(event);
+    var nav = CardService.newNavigation().updateCard(newCard);
+    return CardService.newActionResponseBuilder().setNavigation(nav).build();
+  } catch (e) {
+    console.log("Error while logging in", e);
+    return notify("Error while logging in");
+  }
 }
+
+function refreshTokens1(event) {
+  try {
+    var authData = refreshTokenswithHttp(event);
+    //userProperties.setProperty("ACCESS_TOKEN", authData.accessToken);
+    PropertiesService.getUserProperties().setProperty(
+      "ACCESS_TOKEN",
+      authData?.accessToken
+    );
+    PropertiesService.getUserProperties().setProperty(
+      "REFRESH_TOKEN",
+      authData?.refreshToken
+    );
+    getActiveTms();
+    fetchEquipmentList();
+    parseEmail(event);
+    fetchRates(state.locationFrom, state.locationTo, state.equipment);
+    checkTmsOrder(event);
+    card = createSingleQuoteFormCard(event);
+    return card;
+    var newCard = createSingleQuoteFormCard(event);
+    var nav = CardService.newNavigation().updateCard(newCard);
+    return CardService.newActionResponseBuilder().setNavigation(nav).build();
+  } catch (e) {
+    return notify("Error while refreshing token");
+  }
+}
+
+//refreshTokenswithHttp

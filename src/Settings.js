@@ -11,7 +11,7 @@ function createSettingsCard() {
 
 function CreateAuthButton(section) {
   var accessToken =
-    PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
   if (accessToken) {
     section.addWidget(getButtonWidget("Logout", "logout", "FILLED", "#2f3d8a"));
   } else {
@@ -43,3 +43,8 @@ function settings() {
 }
 
 function navigateToLogin(event) {}
+
+/* {
+  "label": "S2Q Website",
+  "openLink": "https://stg.speedtoquote.com/"
+}, */

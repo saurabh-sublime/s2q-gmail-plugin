@@ -18,6 +18,9 @@ const getParsedFloat = (number = "") => {
 //To recalculate (parseemail api is invoked again)
 const recalculateDetails = (event) => {
   console.log("recalculating begins");
+  const [getRateType, setRateType, deleteRateType] =
+    useStorageState("rateType");
+  setRateType("none");
   var message = getCurrentMessage(event);
   var subject = message.getSubject();
   var from = message.getFrom();
@@ -53,7 +56,7 @@ const recalculateDetails = (event) => {
       pluginUserName: updatedTo,
     };
     var accessToken =
-      PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+      PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
 
     var options = {
       method: "post",
@@ -99,9 +102,13 @@ const recalculateDetails = (event) => {
     } catch (error) {
       if (error.name == "Exception") {
         console.log("error while recalculating", error);
+        return notify("Error while recalculating");
         //logout();
       }
     }
+  } else {
+    console.log("all required details are not there");
+    return notify("Please enter require details");
   }
 };
 
@@ -115,7 +122,7 @@ function getTotalCost(costPerMile, distance, minimumCost, quoteData) {
 
 const fetchEquipmentList = () => {
   var accessToken =
-    PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
 
   var options = {
     method: "get",
@@ -146,7 +153,7 @@ const fetchEquipmentList = () => {
     return data;
   } catch (error) {
     if (error.name == "Exception") {
-      //logout();
+      logout();
       console.log("error while fetching equipments", error);
     }
   }
@@ -155,11 +162,13 @@ const fetchEquipmentList = () => {
 const fetchRates = (locationFrom, locationTo, equipment) => {
   console.log("fetching rate begins");
   const [getRates, setRates, deleteRates] = useStorageState("rates");
+  const [getTmsRates, setTmsRates, deleteTmsRates] =
+    useStorageState("tmsRates");
+  setRates(null);
+  setTmsRates(null);
   var equipmentAllow = ["Tractor", "Reefer", "Flatbed"];
   if (equipmentAllow.includes(equipment?.name.trim())) {
     console.log("fetching rates");
-    const [getTmsRates, setTmsRates, deleteTmsRates] =
-      useStorageState("tmsRates");
 
     const datas = {
       equipmentName: equipment.name,
@@ -167,7 +176,7 @@ const fetchRates = (locationFrom, locationTo, equipment) => {
       locationTo: locationTo,
     };
     var accessToken =
-      PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+      PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
 
     var options = {
       method: "post",
@@ -188,6 +197,7 @@ const fetchRates = (locationFrom, locationTo, equipment) => {
       console.log("these are rates", parsedData);
       setTmsRates(parsedData?.data?.rateResponses[0].response);
       if (parsedData?.data?.rateResponses[0].response.rate) {
+        console.log("these are applied rates");
         setRates(parsedData?.data?.rateResponses[0].response.rate);
       } else {
         setRates(null);
@@ -195,6 +205,7 @@ const fetchRates = (locationFrom, locationTo, equipment) => {
     } catch (error) {
       if (error.name == "Exception") {
         //logout();
+        return notify("Error fetching rates");
         console.log("error while fetching rates", error);
       }
     }
@@ -242,7 +253,7 @@ function sendTmsOrder(event) {
         pluginUserName: updatedTo,
       };
       var accessToken =
-        PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+        PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
 
       var options = {
         method: "post",
@@ -270,6 +281,7 @@ function sendTmsOrder(event) {
           .setNavigation(nav123)
           .build();
       } catch (e) {
+        return notify("Error posting order");
         console.log("error occured while checking tms order", e);
       }
     }
@@ -315,7 +327,7 @@ function createTmsOrder(event) {
         // totalCost: quoteData?.totalCost,
       };
       var accessToken =
-        PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+        PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
 
       var options = {
         method: "post",
@@ -344,7 +356,8 @@ function createTmsOrder(event) {
           .setNavigation(nav123)
           .build();
       } catch (e) {
-        console.log("error occured while creating tms order", e);
+        console.log("Error creating order", e);
+        return notify("Error creating order");
       }
     }
   }
@@ -364,7 +377,7 @@ function checkTmsOrder(event) {
       plugInType: "gmail",
     };
     var accessToken =
-      PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+      PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
     var options = {
       method: "post",
       contentType: "application/json",
@@ -385,6 +398,7 @@ function checkTmsOrder(event) {
       setIsOrderPosted(data?.isOrderPosted);
     } catch (e) {
       console.log("error occured while checking tms order", e);
+      return notify("Error while checking tms order");
     }
   }
 }
@@ -395,7 +409,7 @@ function getActiveTms(event) {
   const [getActiveTmsRate, setActiveTmsRate, deleteActiveTmsRate] =
     useStorageState("activeTmsRate");
   var accessToken =
-    PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
   var options = {
     method: "get",
     contentType: "application/json",
@@ -415,6 +429,7 @@ function getActiveTms(event) {
     console.log("active tms is", data);
     setActiveTms(data?.activeTms);
   } catch (e) {
+    return notify("Error checking active tms");
     console.log("error occured while checking active tms", e);
   }
   try {
@@ -428,6 +443,7 @@ function getActiveTms(event) {
     console.log("active tms rate is", data);
     setActiveTmsRate(data?.activeRate);
   } catch (e) {
+    return notify("Error checking active tms rate");
     console.log("error occured while checking active tms", e);
   }
 }
@@ -441,6 +457,18 @@ function fillMailTemplate() {
           "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"
         ).getContentText()
       );
+
+      eval(
+        UrlFetchApp.fetch(
+          "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone.min.js"
+        ).getContentText()
+      );
+
+      eval(
+        UrlFetchApp.fetch(
+          "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js"
+        ).getContentText()
+      );
       var a = moment([2007, 0, 29]);
       var b = moment([2007, 0, 28]);
       var difference = a.diff(b);
@@ -448,12 +476,12 @@ function fillMailTemplate() {
       const fromDate = moment(quoteData?.pickupTime);
       const toDate = moment(quoteData?.deliveryTime);
 
-      const tzFrom = locationList.find(
+      const tzFrom = locationJson.find(
         (item) =>
           `${item.city}, ${item.state} ${item.zipCode}` ===
           quoteData?.locationFrom
       )?.tz;
-      const tzTo = locationList.find(
+      const tzTo = locationJson.find(
         (item) =>
           `${item.city}, ${item.state} ${item.zipCode}` ===
           quoteData?.locationTo
@@ -462,12 +490,12 @@ function fillMailTemplate() {
       const filledTemplate = fillTemplate(quoteData.equipment.template, {
         ...quoteData,
         cost: quoteData?.totalCost,
-        pickupDateTime: quoteData?.pickupTimestamp
+        pickupDateTime: quoteData?.pickupTime
           ? fromDate.format("MM/DD/YYYY hh:mm A") +
             " " +
             fromDate.tz(tzFrom).format("z")
           : undefined,
-        deliveryDateTime: quoteData?.deliveryTimestamp
+        deliveryDateTime: quoteData?.deliveryTime
           ? toDate.format("MM/DD/YYYY hh:mm A") +
             " " +
             toDate.tz(tzTo).format("z")
@@ -480,6 +508,7 @@ function fillMailTemplate() {
     }
   } catch (err) {
     console.log(" Internal Error. Please retry.", err);
+    return notify("Internal Error. Please retry.");
   }
 }
 
@@ -542,7 +571,7 @@ function convertToHtml(filledTemplate) {
     markDown: filledTemplate,
   };
   var accessToken =
-    PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
   var options = {
     method: "post",
     contentType: "application/json",
@@ -563,5 +592,6 @@ function convertToHtml(filledTemplate) {
     return data.html;
   } catch (e) {
     console.log("error occured while checking tms order", e);
+    return notify("Error while converting to html");
   }
 }

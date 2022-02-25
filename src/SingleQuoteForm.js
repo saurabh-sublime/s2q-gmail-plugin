@@ -37,8 +37,14 @@ function onInputChange(event) {
       tempState
     );
     setState(updatedTempState);
-    if (variable === "equipmentName") {
-      recalculateDetails(event);
+    if (
+      variable === "equipmentName" ||
+      variable === "locationFrom" ||
+      variable === "locationTo"
+    ) {
+      console.log("this was variable");
+      console.log("this ran");
+      return recalculateDetails(event);
     }
   }
   var newCard123 = createSingleQuoteFormCard(event);
@@ -75,7 +81,9 @@ function putTextWidget(section, fieldName, title, value, suggestions) {
 }
 
 function getButtonWidget(buttonName, methodName, type, color) {
-  var buttonAction = CardService.newAction().setFunctionName(methodName);
+  var buttonAction = CardService.newAction()
+    .setFunctionName(methodName)
+    .setLoadIndicator(CardService.LoadIndicator.SPINNER);
   var button = CardService.newTextButton()
     .setText(buttonName)
     .setOnClickAction(buttonAction);
@@ -172,12 +180,26 @@ function createInputFormSection(section, event) {
   section.addWidget(deliveryTimeWidget);
   const [getRates, setRates, deleteRates] = useStorageState("rates");
   if (getRates()) {
-    putTextWidget(section, "costPerMile", "For TMS Rates", state?.costPerMile);
     addRateSection(section, getRates());
   }
-  putTextWidget(section, "costPerMile", "Cost p/m", state?.costPerMile);
-  putTextWidget(section, "fuelPerMile", "Fuel Srchrge p/m", state?.fuelPerMile);
-  putTextWidget(section, "distance", "Distance (Miles)", state?.distance);
+  putTextWidget(
+    section,
+    "costPerMile",
+    "Cost p/m ($)",
+    Number(state?.costPerMile)?.toFixed(2)
+  );
+  putTextWidget(
+    section,
+    "fuelPerMile",
+    "Fuel Srchrge p/m ($)",
+    Number(state?.fuelPerMile)?.toFixed(2)
+  );
+  putTextWidget(
+    section,
+    "distance",
+    "Distance (Miles)",
+    formatMoneySpecial(state?.distance)
+  );
   putTextWidget(
     section,
     "speed",
@@ -185,10 +207,26 @@ function createInputFormSection(section, event) {
     state?.equipment?.mphTransitTime
   );
   putTextWidget(section, "transitTime", "Transit Time", state?.transitTime);
-  putTextWidget(section, "marginProfit", "Margin", state?.marginProfit);
-  putTextWidget(section, "margin", "Margin %", state?.margin, state);
-  putTextWidget(section, "cost", "Cost", state?.cost);
-  putTextWidget(section, "totalCost", "Total Cost", state?.totalCost);
+  putTextWidget(
+    section,
+    "marginProfit",
+    "Margin ($)",
+    formatMoneySpecial(state?.marginProfit)
+  );
+  putTextWidget(
+    section,
+    "margin",
+    "Margin %",
+    Number(state?.margin)?.toFixed(2),
+    state
+  );
+  putTextWidget(section, "cost", "Cost ($)", formatMoneySpecial(state?.cost));
+  putTextWidget(
+    section,
+    "totalCost",
+    "Total Cost ($)",
+    formatMoneySpecial(state?.totalCost)
+  );
 
   section.addWidget(
     getButtonWidget("Recalculate", "recalculateDetails", "FILLED", "#a2d45e")
@@ -198,32 +236,37 @@ function createInputFormSection(section, event) {
     .addButton(getButtonWidget("Send Email", "sendEmail", "FILLED", "#2f3d8a"));
   section.addWidget(buttonSet);
   section.addWidget(CardService.newDivider());
-  var image = CardService.newImage()
-    .setAltText("A nice image")
-    .setImageUrl(getActiveTmsImage());
-  section.addWidget(image);
-  var tmsButtonSet = CardService.newButtonSet()
-    .addButton(
-      getButtonWidget(
-        "Create Order",
-        "createTmsOrder",
-        "FILLED",
-        isOrderPosted ? "#c2c2c2" : "#2f3d8a"
+  const [getActiveTms, setActiveTms, deleteActiveTms] =
+    useStorageState("activeTms");
+  if (getActiveTms()) {
+    var image = CardService.newImage()
+      .setAltText("A nice image")
+      .setImageUrl(getActiveTmsImage());
+    section.addWidget(image);
+    var tmsButtonSet = CardService.newButtonSet()
+      .addButton(
+        getButtonWidget(
+          "Create Order",
+          "createTmsOrder",
+          "FILLED",
+          isOrderPosted ? "#c2c2c2" : "#2f3d8a"
+        )
       )
-    )
-    .addButton(
-      getButtonWidget(
-        "Create & Post Order",
-        "sendTmsOrder",
-        "FILLED",
-        isOrderPosted ? "#c2c2c2" : "#2f3d8a"
-      )
-    );
-  section.addWidget(tmsButtonSet);
-  section.addWidget(CardService.newDivider());
-  section.addWidget(
+      .addButton(
+        getButtonWidget(
+          "Create & Post Order",
+          "sendTmsOrder",
+          "FILLED",
+          isOrderPosted ? "#c2c2c2" : "#2f3d8a"
+        )
+      );
+
+    section.addWidget(tmsButtonSet);
+    //section.addWidget(CardService.newDivider());
+  }
+  /*   section.addWidget(
     getButtonWidget("Console log", "consoleLogValues", "FILLED", "#a2d45e")
-  );
+  ); */
   return section;
 }
 
@@ -239,7 +282,7 @@ function getActiveRateTmsImage(activeTmsRate, rates) {
   if (activeTmsRate?.name === "DAT" && !rates?.perMile) {
     return DAT_PER_TRIP;
   }
-  return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png";
+  return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/noTmsRate.png";
 }
 
 function getActiveTmsImage() {
@@ -257,7 +300,7 @@ function getActiveTmsImage() {
   if (activeTms?.name === "McLeod") {
     return MCLEOD;
   }
-  return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/mcleod.png";
+  return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/noTms.png";
 }
 function addRateSection(section, rates) {
   console.log("these are received rates", rates);
@@ -278,45 +321,93 @@ function addRateSection(section, rates) {
     //.setTitle("Below option are of available rates")
     .setFieldName("checkbox_field")
     .addItem("Not Selected", "none", rateType == "none" && true)
-    .addItem(`$${rates.perMile.lowUsd} (Low)`, "low", rateType == "low" && true)
     .addItem(
-      `$${rates.perMile.rateUsd} (Rate)`,
+      `$${formatMoneySpecial(
+        rates?.perMile?.lowUsd || rates?.perTrip?.lowUsd
+      )} (Low)`,
+      "low",
+      rateType == "low" && true
+    )
+    .addItem(
+      `$${formatMoneySpecial(
+        rates?.perMile?.rateUsd || rates?.perTrip?.rateUsd
+      )} (Rate)`,
       "rate",
       rateType == "rate" && true
     )
     .addItem(
-      `$${rates.perMile.highUsd} (High)`,
+      `$${formatMoneySpecial(
+        rates?.perMile?.highUsd || rates?.perTrip?.highUsd
+      )} (High)`,
       "high",
       rateType == "high" && true
     )
     .setOnChangeAction(
       CardService.newAction()
-        .setFunctionName("handleRateChange")
+        .setFunctionName(rates?.perMile ? "handleRateChange" : "doNothing")
         .setLoadIndicator(CardService.LoadIndicator.SPINNER)
     );
   section.addWidget(radioGroup);
   section.addWidget(
     CardService.newTextParagraph().setText(
       "Fuel Surcharge per mile: <b>$" +
-        rates.averageFuelSurchargePerMileUsd +
+        formatMoneySpecial(
+          rates?.perMile
+            ? rates.averageFuelSurchargePerMileUsd
+            : rates.averageFuelSurchargePerTripUsd
+        ) +
         "</b>"
     )
   );
   section.addWidget(CardService.newDivider());
 }
 
+function doNothing(event) {
+  var newCard123 = createSingleQuoteFormCard(event);
+  console.log("card built");
+  var nav123 = CardService.newNavigation().updateCard(newCard123);
+  return CardService.newActionResponseBuilder().setNavigation(nav123).build();
+}
+
 function handleRateChange(event) {
   const [getRateType, setRateType, deleteRateType] =
     useStorageState("rateType");
   setRateType(event.formInput.checkbox_field);
+  if (event.formInput.checkbox_field === "none") {
+    return recalculateDetails(event);
+  }
   const [getRates, setRates, deleteRates] = useStorageState("rates");
   let state = getState();
   const rates = getRates();
   const rateIndex = { low: "lowUsd", rate: "rateUsd", high: "highUsd" };
   if (rates.perMile) {
-    state.costPerMile =
-      rates.perMile[rateIndex[event.formInput.checkbox_field]];
-    state.fuelPerMile = rates.averageFuelSurchargePerMileUsd;
+    var {
+      margin,
+      marginProfitBackup,
+      totalCostBackup,
+      costBackup,
+      distance,
+      costPerMileBackUp,
+      equipment,
+      distance,
+    } = state;
+
+    const costPerMile = Number(
+      rates.perMile[rateIndex[event.formInput.checkbox_field]]
+    );
+    const fuelPerMile = Number(rates.averageFuelSurchargePerMileUsd);
+    const totalCost = costPerMile * Number(distance);
+
+    const finalCost =
+      equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
+    const { marginProfit, totalCost: updatedTotalCost } =
+      getCalculatedTotalCost(finalCost, margin, fuelPerMile, distance);
+
+    state.costPerMile = costPerMile;
+    state.fuelPerMile = fuelPerMile;
+    state.cost = finalCost;
+    state.marginProfit = marginProfit;
+    state.totalCost = updatedTotalCost;
     setState(state);
     var newCard123 = createSingleQuoteFormCard(event);
     console.log("card built");
@@ -324,6 +415,7 @@ function handleRateChange(event) {
     return CardService.newActionResponseBuilder().setNavigation(nav123).build();
   }
 }
+
 function CreateImageHeader(section) {
   var image = CardService.newImage()
     .setAltText("S2Q Banner")
@@ -335,8 +427,8 @@ function CreateImageHeader(section) {
 }
 
 function logout() {
-  PropertiesService.getScriptProperties().deleteProperty("auths");
-  PropertiesService.getScriptProperties().deleteProperty("ACCESS_TOKEN");
+  PropertiesService.getUserProperties().deleteProperty("auths");
+  PropertiesService.getUserProperties().deleteProperty("ACCESS_TOKEN");
   var newCard = createLoginCard().build();
   var nav = CardService.newNavigation().updateCard(newCard);
   return CardService.newActionResponseBuilder().setNavigation(nav).build();

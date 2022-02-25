@@ -73,22 +73,23 @@ function getContextualAddOn(event) {
   setRootProperty({});
   PropertiesService.getUserProperties().deleteProperty("isInitiated");
   var accessToken =
-    PropertiesService.getScriptProperties().getProperty("ACCESS_TOKEN");
+    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
   var message = getCurrentMessage(event);
   var subject = message.getSubject();
   var from = message.getFrom();
   var body = message.getPlainBody();
   var meesageId = message.getId();
+  return refreshTokensOnStart(event);
   if (!PropertiesService.getUserProperties().getProperty("isInitiated")) {
     parseEmail(event);
     console.log("parsing again");
   }
   var card;
   if (accessToken) {
-    getActiveTms();
-    fetchEquipmentList();
-    fetchRates(state.locationFrom, state.locationTo, state.equipment);
-    checkTmsOrder(event);
+    //getActiveTms();
+    //fetchEquipmentList();
+    //fetchRates(state.locationFrom, state.locationTo, state.equipment);
+    //checkTmsOrder(event);
     card = createSingleQuoteFormCard(event);
     return card;
   } else {
@@ -119,4 +120,69 @@ function updateStateWithParsedData(parsedData) {
     }
   }
   setState(state);
+}
+
+function refreshTokensOnStart(event) {
+  setState(state);
+  deleteRootProperty();
+  setRootProperty({});
+  PropertiesService.getUserProperties().deleteProperty("isInitiated");
+
+  var message = getCurrentMessage(event);
+  var subject = message.getSubject();
+  var from = message.getFrom();
+  var body = message.getPlainBody();
+  var meesageId = message.getId();
+  var accessToken =
+    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
+  const refreshToken =
+    PropertiesService.getUserProperties().getProperty("REFRESH_TOKEN");
+
+  console.log("this is refresh token", refreshToken);
+  console.log("this is access token", accessToken);
+
+  const datas = {
+    refreshToken: refreshToken,
+  };
+
+  var options = {
+    method: "put",
+    contentType: "application/json",
+    // Convert the JavaScript object to a JSON string.
+    payload: JSON.stringify(datas),
+  };
+  try {
+    var respons = UrlFetchApp.fetch(
+      "https://stg.speedtoquote.com/api/auth",
+      options
+    );
+    var json = respons.getContentText();
+    var data = JSON.parse(json);
+    var authData = {
+      accessToken: data?.access?.token,
+      refreshToken: data?.refresh?.token,
+    };
+    console.log("token refreshed");
+    //userProperties.setProperty("ACCESS_TOKEN", authData.accessToken);
+    PropertiesService.getUserProperties().setProperty(
+      "ACCESS_TOKEN",
+      authData?.accessToken
+    );
+    PropertiesService.getUserProperties().setProperty(
+      "REFRESH_TOKEN",
+      authData?.refreshToken
+    );
+    getActiveTms();
+    fetchEquipmentList();
+    parseEmail(event);
+    fetchRates(state.locationFrom, state.locationTo, state.equipment);
+    checkTmsOrder(event);
+    card = createSingleQuoteFormCard(event);
+    return card;
+  } catch (e) {
+    console.log("error while refreshing token", e);
+    card = createLoginCard(from, subject, body, meesageId);
+    return card.build();
+    return notify("Error while logging in 2");
+  }
 }

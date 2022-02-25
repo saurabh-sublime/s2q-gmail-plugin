@@ -46,6 +46,7 @@ function onCostPerMileChange(value, state) {
     equipment,
     distance,
   } = state;
+
   const formattedValue = Number(Number(value).toFixed(2));
   const totalCost = Number(formattedValue) * Number(distance);
 
@@ -126,6 +127,7 @@ function onDistanceChange(value, state) {
   state.marginProfit = marginProfit;
   state.totalCost = updatedTotalCost;
   state.transitTime = formatNumber(updatedTime);
+  return state;
 }
 
 //On speed change
@@ -217,7 +219,7 @@ function onPickupTimeChange(value, state) {
   return state;
 }
 
-function onDeliveryTimeChange(vakue, state) {
+function onDeliveryTimeChange(value, state) {
   state.deliveryTime = value.msSinceEpoch;
   return state;
 }

@@ -15,7 +15,9 @@
     "https://stg.speedtoquote.com/",
     "https://stg.speedtoquote.com/api/front-app/parseemail",
     "https://www.dat.com/wp-content/uploads/2020/11/DAT-FA-131x22-1.svg",
-    "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"
+    "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js"
   ],
   "runtimeVersion": "V8",
   "addOns": {
@@ -24,10 +26,6 @@
       "logoUrl": "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/logo.png",
       "openLinkUrlPrefixes": ["https://stg.speedtoquote.com/"],
       "universalActions": [
-        {
-          "label": "S2Q Website",
-          "openLink": "https://stg.speedtoquote.com/"
-        },
         {
           "label": "Settings",
           "runFunction": "createSettingsCard"
