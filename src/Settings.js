@@ -21,7 +21,7 @@ function CreateAuthButton(section) {
 }
 
 function CreateCancelButton(section) {
-  section.addWidget(getButtonWidget("Cancel", "null", "FILLED", "#a2d45e"));
+  section.addWidget(getButtonWidget("Cancel", "cancel", "FILLED", "#a2d45e"));
   return section;
 }
 
@@ -42,9 +42,7 @@ function settings() {
   return CardService.newActionResponseBuilder().setNavigation(nav).build();
 }
 
-function navigateToLogin(event) {}
-
-/* {
-  "label": "S2Q Website",
-  "openLink": "https://stg.speedtoquote.com/"
-}, */
+function cancel() {
+  var nav = CardService.newNavigation().popCard();
+  return CardService.newActionResponseBuilder().setNavigation(nav).build();
+}

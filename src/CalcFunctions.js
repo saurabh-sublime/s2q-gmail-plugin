@@ -10,6 +10,7 @@ var calcFunctions = {
   margin: onMarginChange,
   marginProfit: onMarginProfitChange,
   cost: onCostChange,
+  totalCost: onTotalCostChange,
   pickupTime: onPickupTimeChange,
   deliveryTime: onDeliveryTimeChange,
 };
@@ -31,6 +32,41 @@ function onLocationFromChange(value, state) {
 function onLocationToChange(value, state) {
   state.locationTo = value;
   return state;
+}
+
+function applyParsedRates() {
+  const parsedRates = getRatesBackup();
+  const state = getState();
+  var {
+    margin,
+    marginProfitBackup,
+    totalCostBackup,
+    costBackup,
+    distance,
+    costPerMileBackUp,
+    equipment,
+    distance,
+  } = state;
+
+  const costPerMile = Number(Number(parsedRates.costPerMile).toFixed(2));
+  const fuelPerMile = Number(Number(parsedRates.fuelPerMile).toFixed(2));
+  const totalCost = Number(costPerMile) * Number(distance);
+
+  const finalCost =
+    equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
+  const { marginProfit, totalCost: updatedTotalCost } = getCalculatedTotalCost(
+    finalCost,
+    margin,
+    fuelPerMile,
+    distance
+  );
+
+  state.costPerMile = costPerMile;
+  state.fuelPerMile = fuelPerMile;
+  state.cost = finalCost;
+  state.marginProfit = marginProfit;
+  state.totalCost = updatedTotalCost;
+  setState(state);
 }
 
 //On cost per mile change
@@ -211,6 +247,13 @@ function onCostChange(value, state) {
   state.marginProfit = marginProfit;
   state.totalCost = totalCost;
   state.cost = formattedValue;
+  return state;
+}
+
+//On total cost change
+function onTotalCostChange(value, state) {
+  let totalCost = getParsedFloat(value);
+  state.totalCost = totalCost;
   return state;
 }
 

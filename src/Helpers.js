@@ -8,8 +8,6 @@
 function sendEmail(event) {
   try {
     var message = getCurrentMessage(event);
-    var auth = CacheService.getUserCache().get("auth");
-    // console.log('this test',JSON.stringify(auth[0]));
     const draftEmail = fillMailTemplate();
     const sendEmailApiResult = sendEmailHttp(event);
     if (sendEmailApiResult === "success") {
@@ -17,12 +15,12 @@ function sendEmail(event) {
         htmlBody: draftEmail,
         noReply: true,
       });
-      return notify("Email has been sent.");
+      return notify("Email sent.");
     } else {
-      return notify("Error sending email 1.");
+      return notify("Error sending email.");
     }
   } catch (e) {
-    return notify("Error sending email 2.");
+    return notify("Error sending email.");
   }
 }
 
@@ -47,11 +45,15 @@ function saveDraft(event) {
 }
 
 function loginWithHttp(event) {
-  var datas = {
+  /*   var datas = {
     email: event.formInput.email || "sublimedev@yopmail.com",
     password: Utilities.base64Encode(
       event.formInput.password || "Sublimedev@123"
     ),
+  }; */
+  var datas = {
+    email: event.formInput.email,
+    password: Utilities.base64Encode(event.formInput.password),
   };
   var options = {
     method: "post",
@@ -72,7 +74,7 @@ function loginWithHttp(event) {
     };
     return authData;
   } catch (e) {
-    return notify("Error while logging in 2");
+    return notify("Error while logging in.");
   }
 }
 
@@ -96,24 +98,8 @@ function sendEmailHttp(event) {
     ).getContentText()
   );
 
-  /*   eval(
-    UrlFetchApp.fetch(
-      "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone.min.js"
-    ).getContentText()
-  );
-
-  eval(
-    UrlFetchApp.fetch(
-      "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js"
-    ).getContentText()
-  ); */
-
-  //https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js
-
   const fromDate = moment(quoteData?.pickupTime);
   const toDate = moment(quoteData?.deliveryTime);
-  console.log("this is converted pickuptime", fromDate.toISOString());
-  console.log("this is converted deliverytime", toDate.toISOString());
 
   const datas = {
     clientEmailToken: meesageId,
@@ -130,7 +116,6 @@ function sendEmailHttp(event) {
     plugInType: "gmail",
   };
 
-  console.log("sent data for save email", JSON.stringify(datas));
   var accessToken =
     PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
   var options = {
@@ -173,8 +158,6 @@ function saveDraftHttp(event) {
     from.lastIndexOf(">")
   );
   const quoteData = getState();
-  var updatedTo = to.substring(to.indexOf("<") + 1, to.lastIndexOf(">"));
-  console.log("this is pickuptime", quoteData?.pickupTime);
 
   eval(
     UrlFetchApp.fetch(
@@ -182,24 +165,9 @@ function saveDraftHttp(event) {
     ).getContentText()
   );
 
-  /*   eval(
-    UrlFetchApp.fetch(
-      "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone.min.js"
-    ).getContentText()
-  );
-
-  eval(
-    UrlFetchApp.fetch(
-      "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js"
-    ).getContentText()
-  ); */
-
-  //https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js
-
   const fromDate = moment(quoteData?.pickupTime);
   const toDate = moment(quoteData?.deliveryTime);
-  console.log("this is converted pickuptime", fromDate.toISOString());
-  console.log("this is converted deliverytime", toDate.toISOString());
+
   const datas = {
     clientEmailToken: meesageId,
     text: body,
@@ -224,8 +192,6 @@ function saveDraftHttp(event) {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-    //Authorization: `Bearer ${accessToken}`,
-    // Convert the JavaScript object to a JSON string.
     payload: JSON.stringify(datas),
   };
   console.log("options", options);
@@ -234,15 +200,10 @@ function saveDraftHttp(event) {
       "https://stg.speedtoquote.com/api/front-app/draftEmail",
       options
     );
-
-    //var json = respons.getContentText();
-    //var data = JSON.parse(json);
-    //console.log("data returned by save draft api", data);
     return "success";
-    //return data;
   } catch (error) {
     console.log("error with save draft api", error);
-    return notify("Error saving draft");
+    return notify("Error saving draft. Please try again");
   }
 }
 
@@ -292,6 +253,8 @@ function parseEmail(event) {
     isInitiated = true;
     PropertiesService.getUserProperties().setProperty("isInitiated", true);
     updateStateWithParsedData(data);
+    setRatesBackup();
+    return recalculateDetails(event);
     var newCard = createSingleQuoteFormCard(event);
     var nav = CardService.newNavigation().updateCard(newCard);
     //return;
@@ -302,6 +265,7 @@ function parseEmail(event) {
     if (error.name == "Exception") {
       logout();
     }
+    return notify("Internal error. Please retry");
   }
 }
 

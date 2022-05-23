@@ -36,6 +36,7 @@ const recalculateDetails = (event) => {
 
   const quoteData = getState();
   var { locationFrom, locationTo, equipment } = quoteData;
+  console.log("fetching rates on on recalculate", state?.equipment);
   fetchRates(locationFrom, locationTo, equipment);
   if (locationFrom && locationTo && equipment) {
     //getActiveTms();
@@ -96,15 +97,13 @@ const recalculateDetails = (event) => {
       state.mapLocations = parsedData.mapLocations;
       const updatedState = state;
       setState(updatedState);
+      setRatesBackup();
       var newCard = createSingleQuoteFormCard(event);
       var nav = CardService.newNavigation().updateCard(newCard);
       return CardService.newActionResponseBuilder().setNavigation(nav).build();
     } catch (error) {
-      if (error.name == "Exception") {
-        console.log("error while recalculating", error);
-        return notify("Error while recalculating");
-        //logout();
-      }
+      console.log("error while recalculating", error);
+      return notify("Error recalculating cost.");
     }
   } else {
     console.log("all required details are not there");
@@ -150,12 +149,10 @@ const fetchEquipmentList = () => {
       setEquipmentList([...equpmentList]);
       console.log("this is equipment list", getEquipmentList());
     }
-    return data;
+    return;
   } catch (error) {
-    if (error.name == "Exception") {
-      logout();
-      console.log("error while fetching equipments", error);
-    }
+    console.log("error while fetching equipments", error);
+    return notify("Error fetching equipment list");
   }
 };
 
@@ -203,11 +200,8 @@ const fetchRates = (locationFrom, locationTo, equipment) => {
         setRates(null);
       }
     } catch (error) {
-      if (error.name == "Exception") {
-        //logout();
-        return notify("Error fetching rates");
-        console.log("error while fetching rates", error);
-      }
+      console.log("error while fetching rates", error);
+      return notify("Error fetching rates");
     }
   } else {
     setRates(null);
@@ -281,8 +275,8 @@ function sendTmsOrder(event) {
           .setNavigation(nav123)
           .build();
       } catch (e) {
-        return notify("Error posting order");
-        console.log("error occured while checking tms order", e);
+        console.log("There was an error posting order to TMS", e);
+        return notify("There was an error posting order to TMS");
       }
     }
   }
@@ -357,7 +351,7 @@ function createTmsOrder(event) {
           .build();
       } catch (e) {
         console.log("Error creating order", e);
-        return notify("Error creating order");
+        return notify("There was an error creating order in TMS");
       }
     }
   }
@@ -443,8 +437,11 @@ function getActiveTms(event) {
     console.log("active tms rate is", data);
     setActiveTmsRate(data?.activeRate);
   } catch (e) {
-    return notify("Error checking active tms rate");
-    console.log("error occured while checking active tms", e);
+    console.log(
+      "error occured while checking active tms & active rate service",
+      e
+    );
+    return notify("Error checking active tms & active rate service");
   }
 }
 
@@ -469,10 +466,6 @@ function fillMailTemplate() {
           "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js"
         ).getContentText()
       );
-      var a = moment([2007, 0, 29]);
-      var b = moment([2007, 0, 28]);
-      var difference = a.diff(b);
-      Logger.log(difference);
       const fromDate = moment(quoteData?.pickupTime);
       const toDate = moment(quoteData?.deliveryTime);
 
@@ -566,6 +559,19 @@ function fillTemplate(mailPattern, mailModel) {
   return mailPattern;
 }
 
+function formatTime(hours) {
+  if (hours > 0) {
+    let rhours = Math.floor(hours);
+    let minutes = (hours - rhours) * 60;
+    let rminutes = Math.round(minutes);
+    return (
+      (rhours ? rhours + " hrs " : "") +
+      (rminutes ? rminutes + `${rminutes === 1 ? " min" : " mins"}` : "")
+    );
+  } else {
+    return "0 Hours";
+  }
+}
 function convertToHtml(filledTemplate) {
   var datas = {
     markDown: filledTemplate,
@@ -592,6 +598,6 @@ function convertToHtml(filledTemplate) {
     return data.html;
   } catch (e) {
     console.log("error occured while checking tms order", e);
-    return notify("Error while converting to html");
+    return notify("Internal error. Please retry");
   }
 }

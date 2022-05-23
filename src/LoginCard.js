@@ -35,7 +35,6 @@ function login(event) {
   var userProperties = PropertiesService.getUserProperties();
   try {
     var authData = loginWithHttp(event);
-    //userProperties.setProperty("ACCESS_TOKEN", authData.accessToken);
     PropertiesService.getUserProperties().setProperty(
       "ACCESS_TOKEN",
       authData?.accessToken
@@ -73,16 +72,11 @@ function refreshTokens1(event) {
     getActiveTms();
     fetchEquipmentList();
     parseEmail(event);
-    fetchRates(state.locationFrom, state.locationTo, state.equipment);
+    state.locationFrom, state.locationTo, state.equipment;
     checkTmsOrder(event);
     card = createSingleQuoteFormCard(event);
     return card;
-    var newCard = createSingleQuoteFormCard(event);
-    var nav = CardService.newNavigation().updateCard(newCard);
-    return CardService.newActionResponseBuilder().setNavigation(nav).build();
   } catch (e) {
-    return notify("Error while refreshing token");
+    return notify("Error refreshing token");
   }
 }
-
-//refreshTokenswithHttp

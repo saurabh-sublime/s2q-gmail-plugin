@@ -72,30 +72,7 @@ function getContextualAddOn(event) {
   deleteRootProperty();
   setRootProperty({});
   PropertiesService.getUserProperties().deleteProperty("isInitiated");
-  var accessToken =
-    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
-  var message = getCurrentMessage(event);
-  var subject = message.getSubject();
-  var from = message.getFrom();
-  var body = message.getPlainBody();
-  var meesageId = message.getId();
   return refreshTokensOnStart(event);
-  if (!PropertiesService.getUserProperties().getProperty("isInitiated")) {
-    parseEmail(event);
-    console.log("parsing again");
-  }
-  var card;
-  if (accessToken) {
-    //getActiveTms();
-    //fetchEquipmentList();
-    //fetchRates(state.locationFrom, state.locationTo, state.equipment);
-    //checkTmsOrder(event);
-    card = createSingleQuoteFormCard(event);
-    return card;
-  } else {
-    card = createLoginCard(from, subject, body, meesageId);
-    return [card.build()];
-  }
 }
 
 /**
@@ -162,8 +139,6 @@ function refreshTokensOnStart(event) {
       accessToken: data?.access?.token,
       refreshToken: data?.refresh?.token,
     };
-    console.log("token refreshed");
-    //userProperties.setProperty("ACCESS_TOKEN", authData.accessToken);
     PropertiesService.getUserProperties().setProperty(
       "ACCESS_TOKEN",
       authData?.accessToken
@@ -175,7 +150,8 @@ function refreshTokensOnStart(event) {
     getActiveTms();
     fetchEquipmentList();
     parseEmail(event);
-    fetchRates(state.locationFrom, state.locationTo, state.equipment);
+    console.log("fetching rates on start", state?.equipment);
+    state.locationFrom, state.locationTo, state.equipment;
     checkTmsOrder(event);
     card = createSingleQuoteFormCard(event);
     return card;
@@ -183,6 +159,5 @@ function refreshTokensOnStart(event) {
     console.log("error while refreshing token", e);
     card = createLoginCard(from, subject, body, meesageId);
     return card.build();
-    return notify("Error while logging in 2");
   }
 }

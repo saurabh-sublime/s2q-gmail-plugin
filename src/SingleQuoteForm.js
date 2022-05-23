@@ -21,7 +21,6 @@ function createSingleQuoteFormCard(event) {
     )
   );
   card.addSection(subjectAndSenderSection);
-  console.log("it worked until here");
   var formSection = createInputFormSection(CardService.newCardSection(), event);
   card.addSection(formSection);
   return card.build();
@@ -42,15 +41,12 @@ function onInputChange(event) {
       variable === "locationFrom" ||
       variable === "locationTo"
     ) {
-      console.log("this was variable");
-      console.log("this ran");
       return recalculateDetails(event);
     }
   }
-  var newCard123 = createSingleQuoteFormCard(event);
-  console.log("card built");
-  var nav123 = CardService.newNavigation().updateCard(newCard123);
-  return CardService.newActionResponseBuilder().setNavigation(nav123).build();
+  //var newCard123 = createSingleQuoteFormCard(event);
+  //var nav123 = CardService.newNavigation().updateCard(newCard123);
+  //return CardService.newActionResponseBuilder().setNavigation(nav123).build();
 }
 
 function rebuild(event) {
@@ -71,6 +67,25 @@ function putTextWidget(section, fieldName, title, value, suggestions) {
       variable: fieldName,
     })
     .setLoadIndicator(CardService.LoadIndicator.SPINNER);
+
+  if (
+    fieldName === "equipmentName" ||
+    fieldName === "locationFrom" ||
+    fieldName === "locationTo"
+  ) {
+    var onInputChangeAction = CardService.newAction()
+      .setFunctionName("onInputChange")
+      .setParameters({
+        variable: fieldName,
+      })
+      .setLoadIndicator(CardService.LoadIndicator.SPINNER);
+  } else {
+    var onInputChangeAction = CardService.newAction()
+      .setFunctionName("onInputChange")
+      .setParameters({
+        variable: fieldName,
+      });
+  }
   if (suggestions?.length > 0) {
     thisTextWidget.setSuggestions(
       CardService.newSuggestions().addSuggestions(suggestions)
@@ -206,7 +221,12 @@ function createInputFormSection(section, event) {
     "Speed (MPH)",
     state?.equipment?.mphTransitTime
   );
-  putTextWidget(section, "transitTime", "Transit Time", state?.transitTime);
+  putTextWidget(
+    section,
+    "transitTime",
+    "Transit Time",
+    formatTime(Number(state?.transitTime))
+  );
   putTextWidget(
     section,
     "marginProfit",
@@ -229,7 +249,7 @@ function createInputFormSection(section, event) {
   );
 
   section.addWidget(
-    getButtonWidget("Recalculate", "recalculateDetails", "FILLED", "#a2d45e")
+    getButtonWidget("Recalculate", "rebuildCard", "FILLED", "#a2d45e")
   );
   var buttonSet = CardService.newButtonSet()
     .addButton(getButtonWidget("Save Draft", "saveDraft", "FILLED", "#2f3d8a"))
@@ -247,7 +267,7 @@ function createInputFormSection(section, event) {
       .addButton(
         getButtonWidget(
           "Create Order",
-          "createTmsOrder",
+          isOrderPosted ? "tmsAlreadyPosted" : "createTmsOrder",
           "FILLED",
           isOrderPosted ? "#c2c2c2" : "#2f3d8a"
         )
@@ -255,7 +275,7 @@ function createInputFormSection(section, event) {
       .addButton(
         getButtonWidget(
           "Create & Post Order",
-          "sendTmsOrder",
+          isOrderPosted ? "tmsAlreadyPosted" : "sendTmsOrder",
           "FILLED",
           isOrderPosted ? "#c2c2c2" : "#2f3d8a"
         )
@@ -343,9 +363,10 @@ function addRateSection(section, rates) {
       rateType == "high" && true
     )
     .setOnChangeAction(
-      CardService.newAction()
-        .setFunctionName(rates?.perMile ? "handleRateChange" : "doNothing")
-        .setLoadIndicator(CardService.LoadIndicator.SPINNER)
+      CardService.newAction().setFunctionName(
+        rates?.perMile ? "handleRateChange" : "doNothing"
+      )
+      //.setLoadIndicator(CardService.LoadIndicator.SPINNER)
     );
   section.addWidget(radioGroup);
   section.addWidget(
@@ -364,7 +385,6 @@ function addRateSection(section, rates) {
 
 function doNothing(event) {
   var newCard123 = createSingleQuoteFormCard(event);
-  console.log("card built");
   var nav123 = CardService.newNavigation().updateCard(newCard123);
   return CardService.newActionResponseBuilder().setNavigation(nav123).build();
 }
@@ -374,7 +394,8 @@ function handleRateChange(event) {
     useStorageState("rateType");
   setRateType(event.formInput.checkbox_field);
   if (event.formInput.checkbox_field === "none") {
-    return recalculateDetails(event);
+    return applyParsedRates(event);
+    //return recalculateDetails(event);
   }
   const [getRates, setRates, deleteRates] = useStorageState("rates");
   let state = getState();
@@ -409,10 +430,10 @@ function handleRateChange(event) {
     state.marginProfit = marginProfit;
     state.totalCost = updatedTotalCost;
     setState(state);
-    var newCard123 = createSingleQuoteFormCard(event);
-    console.log("card built");
-    var nav123 = CardService.newNavigation().updateCard(newCard123);
-    return CardService.newActionResponseBuilder().setNavigation(nav123).build();
+    //var newCard123 = createSingleQuoteFormCard(event);
+    //console.log("card built");
+    //var nav123 = CardService.newNavigation().updateCard(newCard123);
+    //return CardService.newActionResponseBuilder().setNavigation(nav123).build();
   }
 }
 
@@ -424,6 +445,9 @@ function CreateImageHeader(section) {
     );
   section.addWidget(image);
   return section;
+}
+function tmsAlreadyPosted() {
+  return notify("TMS order has already been posted");
 }
 
 function logout() {
@@ -470,3 +494,22 @@ function rebuildCard(event) {
   var nav123 = CardService.newNavigation().updateCard(newCard123);
   return CardService.newActionResponseBuilder().setNavigation(nav123).build();
 }
+
+const setRatesBackup = () => {
+  const [getBuRates, setBuRates, deleteBuRates] = useStorageState("buRates");
+  const state = getState();
+  setBuRates({
+    costPerMile: state.costPerMile,
+    fuelPerMile: state.fuelPerMile,
+  });
+};
+
+const getRatesBackup = () => {
+  const [getBuRates, setBuRates, deleteBuRates] = useStorageState("buRates");
+  return getBuRates();
+};
+
+const deleteRatesBackup = () => {
+  const [getBuRates, setBuRates, deleteBuRates] = useStorageState("buRates");
+  deleteBuRates();
+};
