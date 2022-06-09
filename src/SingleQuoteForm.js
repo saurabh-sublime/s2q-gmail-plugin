@@ -227,6 +227,13 @@ function createInputFormSection(section, event) {
     "Transit Time",
     formatTime(Number(state?.transitTime))
   );
+  putTextWidget(section, "cost", "Cost ($)", formatMoneySpecial(state?.cost));
+  putTextWidget(
+    section,
+    "totalTruckCost",
+    "Total Truck Cost ($)",
+    formatMoneySpecial(state?.totalTruckCost)
+  );
   putTextWidget(
     section,
     "marginProfit",
@@ -240,11 +247,10 @@ function createInputFormSection(section, event) {
     Number(state?.margin)?.toFixed(2),
     state
   );
-  putTextWidget(section, "cost", "Cost ($)", formatMoneySpecial(state?.cost));
   putTextWidget(
     section,
     "totalCost",
-    "Total Cost ($)",
+    "Quote (All In Rate) ($)",
     formatMoneySpecial(state?.totalCost)
   );
 

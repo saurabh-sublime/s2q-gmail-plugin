@@ -252,7 +252,15 @@ function parseEmail(event) {
     var data = JSON.parse(json);
     isInitiated = true;
     PropertiesService.getUserProperties().setProperty("isInitiated", true);
-    updateStateWithParsedData(data);
+    updateStateWithParsedData({
+      ...data,
+      totalTruckCost: calculateTotalTruckCost(
+        data.costPerMile,
+        data.fuelPerMile,
+        data.distance,
+        data.equipment.minimumCost
+      ),
+    });
     setRatesBackup();
     return recalculateDetails(event);
     var newCard = createSingleQuoteFormCard(event);

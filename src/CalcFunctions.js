@@ -10,6 +10,7 @@ var calcFunctions = {
   margin: onMarginChange,
   marginProfit: onMarginProfitChange,
   cost: onCostChange,
+  totalTruckCost: onTotalTruckCostChange,
   totalCost: onTotalCostChange,
   pickupTime: onPickupTimeChange,
   deliveryTime: onDeliveryTimeChange,
@@ -98,6 +99,12 @@ function onCostPerMileChange(value, state) {
   state.costPerMile = formatNumber(formattedValue);
   state.cost = finalCost;
   state.marginProfit = marginProfit;
+  state.totalTruckCost = calculateTotalTruckCost(
+    formattedValue,
+    fuelPerMile,
+    distance,
+    equipment.minimumCost
+  );
   state.totalCost = updatedTotalCost;
   return state;
 }
@@ -126,6 +133,12 @@ function onFuelPerMileChange(value, state) {
   );
 
   state.fuelPerMile = formatNumber(formattedValue);
+  state.totalTruckCost = calculateTotalTruckCost(
+    costPerMile,
+    formattedValue,
+    distance,
+    equipment.minimumCost
+  );
   state.totalCost = updatedTotalCost;
 
   return state;
@@ -161,6 +174,12 @@ function onDistanceChange(value, state) {
   state.distance = formatNumber(formattedValue);
   state.cost = finalCost;
   state.marginProfit = marginProfit;
+  state.totalTruckCost = calculateTotalTruckCost(
+    costPerMile,
+    fuelPerMile,
+    formattedValue,
+    equipment.minimumCost
+  );
   state.totalCost = updatedTotalCost;
   state.transitTime = formatNumber(updatedTime);
   return state;
@@ -180,19 +199,25 @@ function onSpeedChange(value, state) {
 
 //On margin profit change
 function onMarginProfitChange(value, state) {
-  const { marginProfit, cost, marginProfitBackup, distance, fuelPerMile } =
-    state;
+  const {
+    marginProfit,
+    cost,
+    totalTruckCost,
+    marginProfitBackup,
+    distance,
+    fuelPerMile,
+  } = state;
   let formattedValue = getParsedFloat(value);
 
   if (isNaN(formattedValue)) {
     formattedValue = marginProfitBackup;
   }
 
-  const updatedTotalCost = Number(cost) + Number(formattedValue);
+  const updatedTotalCost = Number(totalTruckCost) + Number(formattedValue);
   const margin = (formattedValue * 100) / updatedTotalCost;
   state.margin = formatNumber(margin);
   state.marginProfit = Number(formattedValue);
-  state.totalCost = updatedTotalCost + distance * fuelPerMile;
+  state.totalCost = updatedTotalCost;
   return state;
 }
 
@@ -200,6 +225,7 @@ function onMarginProfitChange(value, state) {
 function onMarginChange(value, state) {
   const {
     cost,
+    totalTruckCost,
     marginBackup,
     marginProfitBackup,
     distance,
@@ -211,11 +237,11 @@ function onMarginChange(value, state) {
     formattedValue = Number(99.99);
   }
 
-  const totalCost = Number(cost) / (1 - formattedValue / 100);
-  const marginProfit = totalCost - cost;
+  const totalCost = Number(totalTruckCost) / (1 - formattedValue / 100);
+  const marginProfit = totalCost - totalTruckCost;
   state.margin = formatNumber(formattedValue);
   state.marginProfit = marginProfit;
-  state.totalCost = totalCost + distance * fuelPerMile;
+  state.totalCost = totalCost;
   return state;
 }
 
@@ -247,6 +273,7 @@ function onCostChange(value, state) {
   state.marginProfit = marginProfit;
   state.totalCost = totalCost;
   state.cost = formattedValue;
+  state.totalTruckCost = formattedValue + fuelPerMile * distance;
   return state;
 }
 
@@ -254,6 +281,22 @@ function onCostChange(value, state) {
 function onTotalCostChange(value, state) {
   let totalCost = getParsedFloat(value);
   state.totalCost = totalCost;
+  return state;
+}
+
+function onTotalTruckCostChange(value, state) {
+  const {
+    marginProfit,
+    cost,
+    costBackup,
+    marginProfitBackup,
+    fuelPerMile,
+    totalCostBackup,
+    distance,
+  } = state;
+  let formattedValue = getParsedFloat(value);
+  state.totalTruckCost = formattedValue;
+  state.totalCost = formattedValue + marginProfit;
   return state;
 }
 
@@ -266,3 +309,16 @@ function onDeliveryTimeChange(value, state) {
   state.deliveryTime = value.msSinceEpoch;
   return state;
 }
+
+const calculateTotalTruckCost = (
+  costPerMile,
+  fuelPerMile,
+  distance,
+  minimumCost
+) => {
+  const totalTruckCost =
+    Number(distance) * (Number(costPerMile) + Number(fuelPerMile || 0));
+  return totalTruckCost > Number(minimumCost)
+    ? totalTruckCost
+    : Number(minimumCost);
+};

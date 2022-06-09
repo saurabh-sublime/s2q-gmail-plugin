@@ -1,9 +1,9 @@
 //To calculate total cost
 const getCalculatedTotalCost = (cost, margin, fuelPerMile = 0, distance) => {
   let fuelCost = Number(fuelPerMile) * distance;
-  const totalCost = Number(cost) / (1 - margin / 100);
-  const marginProfit = Number(totalCost - cost);
-  return { marginProfit, totalCost: totalCost + fuelCost };
+  const totalCost = Number(cost + fuelCost) / (1 - margin / 100);
+  const marginProfit = Number(totalCost - (cost + fuelCost));
+  return { marginProfit, totalCost: totalCost };
 };
 
 //To format number

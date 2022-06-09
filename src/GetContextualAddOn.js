@@ -29,6 +29,7 @@ var state = {
   locationFrom: "",
   locationTo: "",
   cost: 0,
+  totalTruckCost: 0,
   totalCost: 0,
   marginProfit: 0,
   margin: 0,
