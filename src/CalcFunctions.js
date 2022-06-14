@@ -5,6 +5,7 @@ var calcFunctions = {
   locationTo: onLocationToChange,
   costPerMile: onCostPerMileChange,
   fuelPerMile: onFuelPerMileChange,
+  fuelSurchargePercentage: onFuelSurchargeChange,
   distance: onDistanceChange,
   speed: onSpeedChange,
   margin: onMarginChange,
@@ -122,6 +123,7 @@ function onFuelPerMileChange(value, state) {
   } = state;
 
   const formattedValue = Number(Number(value).toFixed(2));
+  const fuelSurchargePercentage = (formattedValue / costPerMile) * 100;
   const totalCost = Number(distance) * Number(costPerMile);
   const finalCost =
     equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
@@ -133,9 +135,46 @@ function onFuelPerMileChange(value, state) {
   );
 
   state.fuelPerMile = formatNumber(formattedValue);
+  state.fuelSurchargePercentage = formatNumber(fuelSurchargePercentage);
   state.totalTruckCost = calculateTotalTruckCost(
     costPerMile,
     formattedValue,
+    distance,
+    equipment.minimumCost
+  );
+  state.totalCost = updatedTotalCost;
+
+  return state;
+}
+
+//On fuel per mile change
+function onFuelSurchargeChange(value, state) {
+  const {
+    distance,
+    costPerMile,
+    fuelPerMileBackup,
+    totalCostBackup,
+    equipment,
+    margin,
+  } = state;
+
+  const formattedValue = Number(Number(value).toFixed(2));
+  const fuelPerMile = (costPerMile * formattedValue) / 100;
+  const totalCost = Number(distance) * Number(costPerMile);
+  const finalCost =
+    equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
+  const { totalCost: updatedTotalCost } = getCalculatedTotalCost(
+    finalCost,
+    margin,
+    fuelPerMile,
+    distance
+  );
+
+  state.fuelSurchargePercentage = formatNumber(formattedValue);
+  state.fuelPerMile = fuelPerMile;
+  state.totalTruckCost = calculateTotalTruckCost(
+    costPerMile,
+    fuelPerMile,
     distance,
     equipment.minimumCost
   );

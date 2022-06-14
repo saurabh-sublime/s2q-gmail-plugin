@@ -250,8 +250,35 @@ function parseEmail(event) {
 
     var json = respons.getContentText();
     var data = JSON.parse(json);
-    isInitiated = true;
+    let finalData = {};
+    console.log("ran1", data?.equipment);
+    if (!data?.equipment) {
+      console.log("ran2", data?.equipment || 123);
+      const [getUser, setUser, deleteUser] = useStorageState("user");
+      const frData = {
+        equipment: getUser()?.defaultEquipment,
+        locationFrom: data?.locationFrom,
+        locationTo: data?.locationTo,
+      };
+      fetchRates(
+        data?.locationFrom,
+        data?.locationTo,
+        getUser()?.defaultEquipment
+      );
+      PropertiesService.getUserProperties().setProperty("isInitiated", true);
+      return recalculateDetails(event, true, frData);
+    }
+    //isInitiated = true;
+
     PropertiesService.getUserProperties().setProperty("isInitiated", true);
+    console.log("qrt", data?.locationFrom, data?.locationTo, data?.equipment);
+    const frData = {
+      equipment: data?.equipment,
+      locationFrom: data?.locationFrom,
+      locationTo: data?.locationTo,
+    };
+    fetchRates(data?.locationFrom, data?.locationTo, data?.equipment);
+    return recalculateDetails(event, true, frData);
     updateStateWithParsedData({
       ...data,
       totalTruckCost: calculateTotalTruckCost(
@@ -262,7 +289,7 @@ function parseEmail(event) {
       ),
     });
     setRatesBackup();
-    return recalculateDetails(event);
+    //recalculateDetails(event);
     var newCard = createSingleQuoteFormCard(event);
     var nav = CardService.newNavigation().updateCard(newCard);
     //return;
@@ -343,3 +370,68 @@ const formatMoneySpecial = (value) =>
   value !== undefined && typeof value === "number"
     ? `${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
     : value;
+
+function getUserHttp() {
+  /*   var message = getCurrentMessage(event);
+  var subject = message.getSubject();
+  var from = message.getFrom();
+  var to = message.getTo();
+  var body = message.getPlainBody();
+  var meesageId = message.getId();
+  var fromEmail = message.getFrom();
+  var updatedFrom = from.substring(
+    from.indexOf("<") + 1,
+    from.lastIndexOf(">")
+  );
+  const quoteData = getState();
+
+  eval(
+    UrlFetchApp.fetch(
+      "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"
+    ).getContentText()
+  );
+
+  const fromDate = moment(quoteData?.pickupTime);
+  const toDate = moment(quoteData?.deliveryTime);
+
+  const datas = {
+    clientEmailToken: meesageId,
+    text: body,
+    locationFrom: quoteData?.locationFrom,
+    locationTo: quoteData?.locationTo,
+    weight: quoteData?.weight,
+    pickupTimestamp: fromDate.toISOString(),
+    deliveryTimestamp: toDate.toISOString(),
+    distance: quoteData?.distance,
+    cost: quoteData?.totalCost,
+    costPerMile: quoteData?.costPerMile,
+    equipment: quoteData?.equipment?.id,
+    plugInType: "gmail",
+  }; */
+  const [getUser, setUser, deleteUser] = useStorageState("user");
+  var accessToken =
+    PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
+  var options = {
+    method: "get",
+    contentType: "application/json",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    //payload: JSON.stringify(datas),
+  };
+  console.log("user options", options);
+  try {
+    var respons = UrlFetchApp.fetch(
+      "https://stg.speedtoquote.com/api/front-app/auth/user",
+      options
+    );
+    var json = respons.getContentText();
+    var data = JSON.parse(json);
+    setUser(data);
+    console.log("user data", data);
+    return "success";
+  } catch (error) {
+    console.log("error with save draft api", error);
+    return notify("Error fetching user info");
+  }
+}

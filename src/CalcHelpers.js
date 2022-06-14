@@ -16,10 +16,13 @@ const getParsedFloat = (number = "") => {
 };
 
 //To recalculate (parseemail api is invoked again)
-const recalculateDetails = (event) => {
+const recalculateDetails = (event, forceRecalculate, frData) => {
   console.log("recalculating begins");
   const [getRateType, setRateType, deleteRateType] =
     useStorageState("rateType");
+
+  const [getUser, setUser, deleteUser] = useStorageState("user");
+
   setRateType("none");
   var message = getCurrentMessage(event);
   var subject = message.getSubject();
@@ -35,8 +38,12 @@ const recalculateDetails = (event) => {
   var updatedTo = to.substring(to.indexOf("<") + 1, to.lastIndexOf(">"));
 
   const quoteData = getState();
-  var { locationFrom, locationTo, equipment } = quoteData;
-  console.log("fetching rates on on recalculate", state?.equipment);
+  if (forceRecalculate) {
+    var { locationFrom, locationTo, equipment } = frData;
+    console.log("ran123", locationFrom, locationTo, equipment);
+  } else {
+    var { locationFrom, locationTo, equipment } = quoteData;
+  }
   fetchRates(locationFrom, locationTo, equipment);
   if (locationFrom && locationTo && equipment) {
     //getActiveTms();
@@ -44,9 +51,9 @@ const recalculateDetails = (event) => {
     //getRates(locationFrom, locationTo, equipment);
 
     const datas = {
-      locationFrom: quoteData?.locationFrom,
-      locationTo: quoteData?.locationTo,
-      equipmentId: quoteData?.equipment?.id,
+      locationFrom: locationFrom,
+      locationTo: locationTo,
+      equipmentId: equipment?.id,
       weight: quoteData?.weight,
       from: updatedFrom,
       subject: subject,
@@ -75,19 +82,41 @@ const recalculateDetails = (event) => {
 
       var json = respons.getContentText();
       var parsedData = JSON.parse(json);
-
-      const state = getState();
-      state.cost = 300;
-      state.cost = getTotalCost(
+      console.log("got data", parsedData);
+      const cost = getTotalCost(
         parsedData.costPerMile,
         parsedData.distance,
         parsedData.equipment?.minimumCost,
-        quoteData
+        0
       );
-      state.totalCost = Number(parsedData.totalCost);
+
+      const state = getState();
+      const fuelSurchargePercentage = parsedData?.equipment?.fuelSurcharge || 0;
+      const fuelPerMile =
+        (parsedData?.costPerMile * fuelSurchargePercentage) / 100;
+      const { marginProfit, totalCost: updatedTotalCost } =
+        getCalculatedTotalCost(
+          cost,
+          state?.margin,
+          fuelPerMile,
+          parsedData?.distance
+        );
+      state.cost = 300;
+      state.cost = cost;
+      state.totalTruckCost = calculateTotalTruckCost(
+        parsedData.costPerMile,
+        getUser()?.fuelPerMile || 0,
+        parsedData.distance,
+        parsedData.equipment.minimumCost
+      );
+      state.fuelPerMile = fuelPerMile;
+      state.fuelSurchargePercentage = fuelSurchargePercentage;
+      state.locationFrom = parsedData.locationFrom;
+      state.locationTo = parsedData.locationTo;
+      state.totalCost = Number(updatedTotalCost);
       state.costPerMile = formatNumber(parsedData.costPerMile);
       state.margin = formatNumber(parsedData.equipment?.margin);
-      state.marginProfit = Number(parsedData.marginProfit);
+      state.marginProfit = Number(marginProfit);
       state.costPerMile = formatNumber(parsedData.costPerMile);
       state.distance = formatNumber(parsedData.distance);
       state.weight = parsedData.weight;

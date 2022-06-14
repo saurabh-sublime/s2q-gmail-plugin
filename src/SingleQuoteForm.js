@@ -211,6 +211,12 @@ function createInputFormSection(section, event) {
   );
   putTextWidget(
     section,
+    "fuelSurchargePercentage",
+    "Fuel Srchrge %",
+    Number(state?.fuelSurchargePercentage)?.toFixed(2)
+  );
+  putTextWidget(
+    section,
     "distance",
     "Distance (Miles)",
     formatMoneySpecial(state?.distance)

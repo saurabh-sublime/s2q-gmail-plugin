@@ -148,11 +148,12 @@ function refreshTokensOnStart(event) {
       "REFRESH_TOKEN",
       authData?.refreshToken
     );
+    getUserHttp();
     getActiveTms();
     fetchEquipmentList();
     parseEmail(event);
-    console.log("fetching rates on start", state?.equipment);
-    state.locationFrom, state.locationTo, state.equipment;
+    //console.log("fetching rates on start", state?.equipment);
+    //state.locationFrom, state.locationTo, state.equipment;
     checkTmsOrder(event);
     card = createSingleQuoteFormCard(event);
     return card;
