@@ -38,6 +38,7 @@ function onLocationToChange(value, state) {
 
 function applyParsedRates() {
   const parsedRates = getRatesBackup();
+
   const state = getState();
   var {
     margin,
@@ -53,6 +54,8 @@ function applyParsedRates() {
   const costPerMile = Number(Number(parsedRates.costPerMile).toFixed(2));
   const fuelPerMile = Number(Number(parsedRates.fuelPerMile).toFixed(2));
   const totalCost = Number(costPerMile) * Number(distance);
+  const totalTruckCost =
+    (Number(costPerMile) + Number(fuelPerMile)) * Number(distance);
 
   const finalCost =
     equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
@@ -66,7 +69,7 @@ function applyParsedRates() {
   state.costPerMile = costPerMile;
   state.fuelPerMile = fuelPerMile;
   state.cost = finalCost;
-  state.marginProfit = marginProfit;
+  state.totalTruckCost = totalTruckCost;
   state.totalCost = updatedTotalCost;
   setState(state);
 }

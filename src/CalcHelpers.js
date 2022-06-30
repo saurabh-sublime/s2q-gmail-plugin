@@ -188,6 +188,9 @@ const fetchEquipmentList = () => {
 const fetchRates = (locationFrom, locationTo, equipment) => {
   console.log("fetching rate begins");
   const [getRates, setRates, deleteRates] = useStorageState("rates");
+  const [getActiveTmsRate, setActiveTmsRate, deleteActiveTmsRate] =
+    useStorageState("activeTmsRate");
+  const activeTmsRate = getActiveTmsRate();
   const [getTmsRates, setTmsRates, deleteTmsRates] =
     useStorageState("tmsRates");
   setRates(null);
@@ -198,6 +201,7 @@ const fetchRates = (locationFrom, locationTo, equipment) => {
 
     const datas = {
       equipmentName: equipment.name,
+      equipmentId: equipment.id,
       locationFrom: locationFrom,
       locationTo: locationTo,
     };
@@ -221,12 +225,19 @@ const fetchRates = (locationFrom, locationTo, equipment) => {
       var json = respons.getContentText();
       var parsedData = JSON.parse(json);
       console.log("these are rates", parsedData);
-      setTmsRates(parsedData?.data?.rateResponses[0].response);
-      if (parsedData?.data?.rateResponses[0].response.rate) {
+      /*       console.log(
+        "rts",
+        formatTmsRates(parsedData, activeTmsRate?.name),
+        parsedData?.data?.rateResponses[0].response
+      ); */
+      //setTmsRates(parsedData?.data?.rateResponses[0].response);
+      //if (parsedData?.data?.rateResponses[0].response.rate) {
+      if (formatTmsRates(parsedData, activeTmsRate?.name)?.length > 0) {
         console.log("these are applied rates");
-        setRates(parsedData?.data?.rateResponses[0].response.rate);
+        //setRates(parsedData?.data?.rateResponses[0].response.rate);
+        setRates(formatTmsRates(parsedData, activeTmsRate?.name));
       } else {
-        setRates(null);
+        setRates([]);
       }
     } catch (error) {
       console.log("error while fetching rates", error);

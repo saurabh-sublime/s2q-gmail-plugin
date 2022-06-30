@@ -194,8 +194,10 @@ function createInputFormSection(section, event) {
 
   section.addWidget(deliveryTimeWidget);
   const [getRates, setRates, deleteRates] = useStorageState("rates");
+  // Rate section being added
   if (getRates()) {
     addRateSection(section, getRates());
+    section.addWidget(CardService.newDivider());
   }
   putTextWidget(
     section,
@@ -213,6 +215,7 @@ function createInputFormSection(section, event) {
     section,
     "fuelSurchargePercentage",
     "Fuel Srchrge %",
+
     Number(state?.fuelSurchargePercentage)?.toFixed(2)
   );
   putTextWidget(
@@ -307,12 +310,17 @@ function getActiveRateTmsImage(activeTmsRate, rates) {
     "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png";
   const DAT_PER_TRIP =
     "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpertrip.png";
+  const LL_PER_TRIP =
+    "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/ll_costPerTrip.png";
 
   if (activeTmsRate?.name === "DAT" && rates?.perMile) {
     return DAT_PER_MILE;
   }
   if (activeTmsRate?.name === "DAT" && !rates?.perMile) {
     return DAT_PER_TRIP;
+  }
+  if (activeTmsRate?.name === "Logistical Lab" && !rates?.perMile) {
+    return LL_PER_TRIP;
   }
   return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/noTmsRate.png";
 }
@@ -334,65 +342,210 @@ function getActiveTmsImage() {
   }
   return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/noTms.png";
 }
+function isRateSelectedFunc(rate, selectedRate, thisRateType) {
+  if (
+    rate?.rateService === selectedRate?.rate?.rateService &&
+    thisRateType === selectedRate?.rateType
+  ) {
+    console.log(
+      "returning  true",
+      rate?.rateService,
+      selectedRate?.rate?.rateService,
+      thisRateType,
+      selectedRate?.rateType
+    );
+    return true;
+  }
+  console.log(
+    "returning  false",
+    rate?.rateService,
+    selectedRate?.rate?.rateService,
+    thisRateType,
+    selectedRate?.rateType
+  );
+  return false;
+}
+const isRateFound = (rate) => {
+  const isRateFound =
+    rate?.perMile?.lowUsd ||
+    rate?.perTrip?.lowUsd ||
+    rate?.perMile?.rateUsd ||
+    rate?.perTrip?.rateUsd ||
+    rate?.perMile?.highUsd ||
+    rate?.perTrip?.highUsd;
+  return isRateFound;
+};
 function addRateSection(section, rates) {
   console.log("these are received rates", rates);
   const [getRateType, setRateType, deleteRateType] =
     useStorageState("rateType");
+  const [getSelectedRate, setSelectedRate, deleteSelectedRate] =
+    useStorageState("selectedRate");
+  const selectedRate = getSelectedRate();
+  console.log("the selected Rate", selectedRate?.rateType);
+  var rateType = getRateType();
   const [getActiveTmsRate, setActiveTmsRate, deleteActiveTmsRate] =
     useStorageState("activeTmsRate");
   const activeTmsRate = getActiveTmsRate();
-
+  console.log("txt", activeTmsRate);
   section.addWidget(CardService.newDivider());
   var image = CardService.newImage()
     .setAltText("A nice image")
     .setImageUrl(getActiveRateTmsImage(activeTmsRate, rates));
   section.addWidget(image);
-  var rateType = getRateType();
-  var radioGroup = CardService.newSelectionInput()
-    .setType(CardService.SelectionInputType.RADIO_BUTTON)
-    //.setTitle("Below option are of available rates")
-    .setFieldName("checkbox_field")
-    .addItem("Not Selected", "none", rateType == "none" && true)
-    .addItem(
-      `$${formatMoneySpecial(
-        rates?.perMile?.lowUsd || rates?.perTrip?.lowUsd
-      )} (Low)`,
-      "low",
-      rateType == "low" && true
-    )
-    .addItem(
-      `$${formatMoneySpecial(
-        rates?.perMile?.rateUsd || rates?.perTrip?.rateUsd
-      )} (Rate)`,
-      "rate",
-      rateType == "rate" && true
-    )
-    .addItem(
-      `$${formatMoneySpecial(
-        rates?.perMile?.highUsd || rates?.perTrip?.highUsd
-      )} (High)`,
-      "high",
-      rateType == "high" && true
-    )
-    .setOnChangeAction(
-      CardService.newAction().setFunctionName(
-        rates?.perMile ? "handleRateChange" : "doNothing"
-      )
-      //.setLoadIndicator(CardService.LoadIndicator.SPINNER)
+
+  rates.map((rate) => {
+    section.addWidget(
+      CardService.newTextParagraph().setText(rate?.rateService)
     );
-  section.addWidget(radioGroup);
-  section.addWidget(
-    CardService.newTextParagraph().setText(
-      "Fuel Surcharge per mile: <b>$" +
-        formatMoneySpecial(
-          rates?.perMile
-            ? rates.averageFuelSurchargePerMileUsd
-            : rates.averageFuelSurchargePerTripUsd
-        ) +
-        "</b>"
-    )
-  );
-  section.addWidget(CardService.newDivider());
+    if (isRateFound(rate)) {
+      const addRadioButton1 = (item, rateType, rate) => {
+        //item.addItem("Not Selected", "none", false);
+        if (rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd) {
+          const changedSelectedRate = JSON.stringify({
+            rate: rate,
+            rateType: "low",
+          });
+          const isRateSelected =
+            isRateSelectedFunc(rate, selectedRate, "low") && true;
+          console.log("this", isRateSelected);
+          item.addItem(
+            `$${formatMoneySpecial(
+              rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd
+            )} (Low)`,
+            changedSelectedRate,
+            isRateSelected
+          );
+        }
+        if (rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd) {
+          const changedSelectedRate = JSON.stringify({
+            rate: rate,
+            rateType: "rate",
+          });
+          const isRateSelected =
+            isRateSelectedFunc(rate, selectedRate, "rate") && true;
+          console.log("this", isRateSelected);
+          item.addItem(
+            `$${formatMoneySpecial(
+              rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd
+            )} (Rate)`,
+            changedSelectedRate,
+            isRateSelected
+          );
+        }
+        if (rate?.perMile?.highUsd || rate?.perTrip?.highUsd) {
+          const changedSelectedRate = JSON.stringify({
+            rate: rate,
+            rateType: "high",
+          });
+          const isRateSelected =
+            isRateSelectedFunc(rate, selectedRate, "high") && true;
+          console.log("this", isRateSelected);
+          item.addItem(
+            `$${formatMoneySpecial(
+              rate?.perMile?.highUsd || rate?.perTrip?.highUsd
+            )} (High)`,
+            changedSelectedRate,
+            isRateSelected
+          );
+          0;
+        }
+        const nullRate = JSON.stringify({ rate: null, rateType: "none" });
+        item.addItem(
+          "Not Selected",
+          nullRate,
+          !(selectedRate?.rateType === "none")
+        );
+      };
+      var radioGroup = CardService.newSelectionInput()
+        .setType(CardService.SelectionInputType.RADIO_BUTTON)
+        //.setTitle("Below option are of available rates")
+        .setFieldName("checkbox_field");
+      /*
+      .addItem("Not Selected", "none", rateType == "none" && true);
+      .addItem(
+        `$${formatMoneySpecial(
+          rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd
+        )} (Low)`,
+        "low",
+        rateType == "low" && true
+      )
+      .addItem(
+        `$${formatMoneySpecial(
+          rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd
+        )} (Rate)`,
+        "rate",
+        rateType == "rate" && true
+      )
+      .addItem(
+        `$${formatMoneySpecial(
+          rate?.perMile?.highUsd || rate?.perTrip?.highUsd
+        )} (High)`,
+        "high",
+        rateType == "high" && true
+      )
+      .setOnChangeAction(
+        CardService.newAction().setFunctionName(
+          rate?.perMile ? "handleRateChange" : "doNothing"
+        )
+
+        //.setLoadIndicator(CardService.LoadIndicator.SPINNER)
+      ); */
+      /*     if (rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd) {
+      addRadioButton(
+        radioGroup,
+        `$${formatMoneySpecial(
+          rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd
+        )} (Low)`,
+        "low",
+        rateType == "low" && true
+      );
+    }
+    if (rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd) {
+      addRadioButton(
+        radioGroup,
+        `$${formatMoneySpecial(
+          rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd
+        )} (Rate)`,
+        "rate",
+        rateType == "rate" && true
+      );
+    }
+    if (rate?.perMile?.highUsd || rate?.perTrip?.highUsd) {
+      addRadioButton(
+        radioGroup,
+        `$${formatMoneySpecial(
+          rate?.perMile?.highUsd || rate?.perTrip?.highUsd
+        )} (High)`,
+        "high",
+        rateType == "high" && true
+      );
+    } */
+      addRadioButton1(radioGroup, rateType, rate);
+      radioGroup.setOnChangeAction(
+        CardService.newAction().setFunctionName(
+          rate?.perMile ? "handleRateChange" : "handleRateChangePerTrip"
+        )
+      );
+      section.addWidget(radioGroup);
+      section.addWidget(
+        CardService.newTextParagraph().setText(
+          "Fuel Surcharge per mile: <b>$" +
+            formatMoneySpecial(
+              (rate?.perMile
+                ? rate.averageFuelSurchargePerMileUsd
+                : rate.averageFuelSurchargePerTripUsd) || 0
+            ) +
+            "</b>"
+        )
+      );
+      section.addWidget(CardService.newDivider());
+    } else {
+      section.addWidget(
+        CardService.newTextParagraph().setText("No rate data found")
+      );
+    }
+  });
 }
 
 function doNothing(event) {
@@ -402,18 +555,24 @@ function doNothing(event) {
 }
 
 function handleRateChange(event) {
+  //return console.log(JSON.stringify(event?.formInput?.checkbox_field));
+  const selectedRate = JSON.parse(event?.formInput?.checkbox_field);
+  console.log("selecting rates for per mile", selectedRate);
   const [getRateType, setRateType, deleteRateType] =
     useStorageState("rateType");
+  const [getSelectedRate, setSelectedRate, deleteSelectedRate] =
+    useStorageState("selectedRate");
+  setSelectedRate(selectedRate);
   setRateType(event.formInput.checkbox_field);
-  if (event.formInput.checkbox_field === "none") {
+  if ((selectedRate, rateType === "none")) {
     return applyParsedRates(event);
     //return recalculateDetails(event);
   }
   const [getRates, setRates, deleteRates] = useStorageState("rates");
   let state = getState();
-  const rates = getRates();
+  const rate = selectedRate?.rate;
   const rateIndex = { low: "lowUsd", rate: "rateUsd", high: "highUsd" };
-  if (rates.perMile) {
+  if (rate.perMile) {
     var {
       margin,
       marginProfitBackup,
@@ -425,10 +584,8 @@ function handleRateChange(event) {
       distance,
     } = state;
 
-    const costPerMile = Number(
-      rates.perMile[rateIndex[event.formInput.checkbox_field]]
-    );
-    const fuelPerMile = Number(rates.averageFuelSurchargePerMileUsd);
+    const costPerMile = Number(rate.perMile[rateIndex[selectedRate.rateType]]);
+    const fuelPerMile = Number(rate.averageFuelSurchargePerMileUsd);
     const totalCost = costPerMile * Number(distance);
 
     const finalCost =
@@ -447,6 +604,61 @@ function handleRateChange(event) {
     //var nav123 = CardService.newNavigation().updateCard(newCard123);
     //return CardService.newActionResponseBuilder().setNavigation(nav123).build();
   }
+}
+
+function handleRateChangePerTrip(event) {
+  const selectedRate = JSON.parse(event?.formInput?.checkbox_field);
+  console.log("selecting rates for per trip", selectedRate);
+  const [getRateType, setRateType, deleteRateType] =
+    useStorageState("rateType");
+  const [getSelectedRate, setSelectedRate, deleteSelectedRate] =
+    useStorageState("selectedRate");
+  setSelectedRate(selectedRate);
+  setRateType(event.formInput.checkbox_field);
+  if (selectedRate?.rateType === "none") {
+    return applyParsedRates(event);
+  }
+  const [getRates, setRates, deleteRates] = useStorageState("rates");
+  let state = getState();
+  const rate = selectedRate.rate;
+  const rateIndex = { low: "lowUsd", rate: "rateUsd", high: "highUsd" };
+  var {
+    margin,
+    marginProfitBackup,
+    totalCostBackup,
+    costBackup,
+    fuelPerMile,
+    distance,
+    costPerMileBackUp,
+    equipment,
+    distance,
+  } = state;
+
+  //const costPerMile = Number(rate.perTrip[rateIndex[selectedRate.rateService]]);
+  //const fuelPerMile = Number(rates.averageFuelSurchargePerMileUsd);
+  const totalCost = Number(rate.perTrip[rateIndex[selectedRate.rateType]]);
+
+  const finalCost =
+    equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
+
+  const { marginProfit, totalCost: updatedTotalCost } = getCalculatedTotalCost(
+    finalCost,
+    margin,
+    0,
+    distance
+  );
+
+  state.cost = finalCost;
+  state.totalTruckCost = finalCost;
+  state.fuelPerMile = 0;
+  state.fuelSurchargePercentage = 0;
+  state.marginProfit = marginProfit;
+  state.totalCost = updatedTotalCost;
+  setState(state);
+  //var newCard123 = createSingleQuoteFormCard(event);
+  //console.log("card built");
+  //var nav123 = CardService.newNavigation().updateCard(newCard123);
+  //return CardService.newActionResponseBuilder().setNavigation(nav123).build();
 }
 
 function CreateImageHeader(section) {
