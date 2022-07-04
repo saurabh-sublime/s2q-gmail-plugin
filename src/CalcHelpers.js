@@ -97,15 +97,16 @@ const recalculateDetails = (event, forceRecalculate, frData) => {
       const { marginProfit, totalCost: updatedTotalCost } =
         getCalculatedTotalCost(
           cost,
-          state?.margin,
-          fuelPerMile,
+          formatNumber(parsedData.equipment?.margin),
+          fuelPerMile || 0,
           parsedData?.distance
         );
       state.cost = 300;
       state.cost = cost;
+      console.log(getUser().fuelPerMile)
       state.totalTruckCost = calculateTotalTruckCost(
         parsedData.costPerMile,
-        getUser()?.fuelPerMile || 0,
+        fuelPerMile || 0,
         parsedData.distance,
         parsedData.equipment.minimumCost
       );
@@ -285,7 +286,9 @@ function sendTmsOrder(event) {
         clientEmailToken: messageId,
         pluginUserEmail: updatedTo,
         pluginUserName: updatedTo,
+        comment:quoteData?.comment,
       };
+      console.log('sent data', datas)
       var accessToken =
         PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
 
@@ -358,6 +361,7 @@ function createTmsOrder(event) {
         pluginUserEmail: messageId,
         pluginUserName: updatedTo,
         clientEmailToken: updatedTo,
+        comment:quoteData?.comment,
         // totalCost: quoteData?.totalCost,
       };
       var accessToken =

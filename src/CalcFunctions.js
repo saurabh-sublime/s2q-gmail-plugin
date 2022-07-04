@@ -15,6 +15,7 @@ var calcFunctions = {
   totalCost: onTotalCostChange,
   pickupTime: onPickupTimeChange,
   deliveryTime: onDeliveryTimeChange,
+  comment:onCommentChange,
 };
 
 //On Equipment Change
@@ -323,6 +324,11 @@ function onCostChange(value, state) {
 function onTotalCostChange(value, state) {
   let totalCost = getParsedFloat(value);
   state.totalCost = totalCost;
+  return state;
+}
+
+function onCommentChange(value, state) {
+  state.comment = value;
   return state;
 }
 

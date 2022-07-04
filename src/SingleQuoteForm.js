@@ -49,6 +49,7 @@ function onInputChange(event) {
   //return CardService.newActionResponseBuilder().setNavigation(nav123).build();
 }
 
+//Function to rebuild the card
 function rebuild(event) {
   CardService.newActionResponseBuilder()
     .setNavigation(
@@ -56,6 +57,8 @@ function rebuild(event) {
     )
     .build();
 }
+
+//Function to create the Text Widget
 function putTextWidget(section, fieldName, title, value, suggestions) {
   var thisTextWidget = CardService.newTextInput()
     .setFieldName(fieldName)
@@ -95,6 +98,8 @@ function putTextWidget(section, fieldName, title, value, suggestions) {
   section.addWidget(thisTextWidget);
 }
 
+
+//Function to create Button Widget
 function getButtonWidget(buttonName, methodName, type, color) {
   var buttonAction = CardService.newAction()
     .setFunctionName(methodName)
@@ -133,6 +138,8 @@ const getEquipmentSuggestions = () => {
   return { equipmentList: equipmentList, equipmentObject: equipmentObject };
 };
 
+
+//Function to create plugin form
 function createInputFormSection(section, event) {
   const [getIsOrderPosted, setIsOrderPosted, deleteIsOrderPosted] =
     useStorageState("isOrderPosted");
@@ -236,7 +243,7 @@ function createInputFormSection(section, event) {
     "Transit Time",
     formatTime(Number(state?.transitTime))
   );
-  putTextWidget(section, "cost", "Cost ($)", formatMoneySpecial(state?.cost));
+  putTextWidget(section, "cost", "Truck Cost ($)", formatMoneySpecial(state?.cost));
   putTextWidget(
     section,
     "totalTruckCost",
@@ -261,6 +268,12 @@ function createInputFormSection(section, event) {
     "totalCost",
     "Quote (All In Rate) ($)",
     formatMoneySpecial(state?.totalCost)
+  );
+  putTextWidget(
+    section,
+    "comment",
+    "Comment",
+    state?.comment
   );
 
   section.addWidget(
@@ -305,6 +318,7 @@ function createInputFormSection(section, event) {
   return section;
 }
 
+//Function to select Active Rate TMS Image
 function getActiveRateTmsImage(activeTmsRate, rates) {
   const DAT_PER_MILE =
     "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/dat_costpermile.png";
@@ -325,6 +339,7 @@ function getActiveRateTmsImage(activeTmsRate, rates) {
   return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/noTmsRate.png";
 }
 
+//Function to select Active TMS Image
 function getActiveTmsImage() {
   const [getActiveTms, setActiveTms, deleteActiveTms] =
     useStorageState("activeTms");
@@ -342,6 +357,8 @@ function getActiveTmsImage() {
   }
   return "https://raw.githubusercontent.com/saurabh-sublime/s2q-gmail-plugin/master/images/noTms.png";
 }
+
+//Function to check whether rate is selected based on radio button input
 function isRateSelectedFunc(rate, selectedRate, thisRateType) {
   if (
     rate?.rateService === selectedRate?.rate?.rateService &&
@@ -365,6 +382,8 @@ function isRateSelectedFunc(rate, selectedRate, thisRateType) {
   );
   return false;
 }
+
+////Function to check whether rate is found
 const isRateFound = (rate) => {
   const isRateFound =
     rate?.perMile?.lowUsd ||
@@ -375,20 +394,19 @@ const isRateFound = (rate) => {
     rate?.perTrip?.highUsd;
   return isRateFound;
 };
+
+//Function to create rate section
 function addRateSection(section, rates) {
-  console.log("these are received rates", rates);
-  const [getRateType, setRateType, deleteRateType] =
-    useStorageState("rateType");
   const [getSelectedRate, setSelectedRate, deleteSelectedRate] =
     useStorageState("selectedRate");
   const selectedRate = getSelectedRate();
-  console.log("the selected Rate", selectedRate?.rateType);
-  var rateType = getRateType();
+
   const [getActiveTmsRate, setActiveTmsRate, deleteActiveTmsRate] =
     useStorageState("activeTmsRate");
   const activeTmsRate = getActiveTmsRate();
-  console.log("txt", activeTmsRate);
+
   section.addWidget(CardService.newDivider());
+
   var image = CardService.newImage()
     .setAltText("A nice image")
     .setImageUrl(getActiveRateTmsImage(activeTmsRate, rates));
@@ -399,8 +417,7 @@ function addRateSection(section, rates) {
       CardService.newTextParagraph().setText(rate?.rateService)
     );
     if (isRateFound(rate)) {
-      const addRadioButton1 = (item, rateType, rate) => {
-        //item.addItem("Not Selected", "none", false);
+      const addRadioButton1 = (item, rate) => {
         if (rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd) {
           const changedSelectedRate = JSON.stringify({
             rate: rate,
@@ -450,95 +467,44 @@ function addRateSection(section, rates) {
           );
           0;
         }
+
         const nullRate = JSON.stringify({ rate: null, rateType: "none" });
+        const isNullRate = !selectedRate || (selectedRate?.rateType === "none");
+
+        console.log('selected rate', selectedRate)
         item.addItem(
           "Not Selected",
           nullRate,
-          !(selectedRate?.rateType === "none")
+          isNullRate
         );
       };
+
+
+
       var radioGroup = CardService.newSelectionInput()
         .setType(CardService.SelectionInputType.RADIO_BUTTON)
-        //.setTitle("Below option are of available rates")
         .setFieldName("checkbox_field");
-      /*
-      .addItem("Not Selected", "none", rateType == "none" && true);
-      .addItem(
-        `$${formatMoneySpecial(
-          rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd
-        )} (Low)`,
-        "low",
-        rateType == "low" && true
-      )
-      .addItem(
-        `$${formatMoneySpecial(
-          rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd
-        )} (Rate)`,
-        "rate",
-        rateType == "rate" && true
-      )
-      .addItem(
-        `$${formatMoneySpecial(
-          rate?.perMile?.highUsd || rate?.perTrip?.highUsd
-        )} (High)`,
-        "high",
-        rateType == "high" && true
-      )
-      .setOnChangeAction(
-        CardService.newAction().setFunctionName(
-          rate?.perMile ? "handleRateChange" : "doNothing"
-        )
 
-        //.setLoadIndicator(CardService.LoadIndicator.SPINNER)
-      ); */
-      /*     if (rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd) {
-      addRadioButton(
-        radioGroup,
-        `$${formatMoneySpecial(
-          rate?.perMile?.lowUsd || rate?.perTrip?.lowUsd
-        )} (Low)`,
-        "low",
-        rateType == "low" && true
-      );
-    }
-    if (rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd) {
-      addRadioButton(
-        radioGroup,
-        `$${formatMoneySpecial(
-          rate?.perMile?.rateUsd || rate?.perTrip?.rateUsd
-        )} (Rate)`,
-        "rate",
-        rateType == "rate" && true
-      );
-    }
-    if (rate?.perMile?.highUsd || rate?.perTrip?.highUsd) {
-      addRadioButton(
-        radioGroup,
-        `$${formatMoneySpecial(
-          rate?.perMile?.highUsd || rate?.perTrip?.highUsd
-        )} (High)`,
-        "high",
-        rateType == "high" && true
-      );
-    } */
-      addRadioButton1(radioGroup, rateType, rate);
+      addRadioButton1(radioGroup, rate);
+
       radioGroup.setOnChangeAction(
         CardService.newAction().setFunctionName(
           rate?.perMile ? "handleRateChange" : "handleRateChangePerTrip"
         )
       );
+
       section.addWidget(radioGroup);
-      section.addWidget(
-        CardService.newTextParagraph().setText(
-          "Fuel Surcharge per mile: <b>$" +
+      if (rate?.perMile) {
+        section.addWidget(
+          CardService.newTextParagraph().setText(
+            "Fuel Surcharge per mile: <b>$" +
             formatMoneySpecial(
-              (rate?.perMile
-                ? rate.averageFuelSurchargePerMileUsd
-                : rate.averageFuelSurchargePerTripUsd) || 0
-            ) +
-            "</b>"
-        )
-      );
+                rate?.averageFuelSurchargePerMileUsd
+             +
+              "</b>"
+            )
+          ));
+      }
       section.addWidget(CardService.newDivider());
     } else {
       section.addWidget(
@@ -555,23 +521,23 @@ function doNothing(event) {
 }
 
 function handleRateChange(event) {
-  //return console.log(JSON.stringify(event?.formInput?.checkbox_field));
   const selectedRate = JSON.parse(event?.formInput?.checkbox_field);
-  console.log("selecting rates for per mile", selectedRate);
-  const [getRateType, setRateType, deleteRateType] =
-    useStorageState("rateType");
+
   const [getSelectedRate, setSelectedRate, deleteSelectedRate] =
     useStorageState("selectedRate");
   setSelectedRate(selectedRate);
-  setRateType(event.formInput.checkbox_field);
-  if ((selectedRate, rateType === "none")) {
+
+  if ((selectedRate?.rateType === "none")) {
     return applyParsedRates(event);
-    //return recalculateDetails(event);
   }
-  const [getRates, setRates, deleteRates] = useStorageState("rates");
+
+
   let state = getState();
+
   const rate = selectedRate?.rate;
+
   const rateIndex = { low: "lowUsd", rate: "rateUsd", high: "highUsd" };
+
   if (rate.perMile) {
     var {
       margin,
@@ -597,31 +563,32 @@ function handleRateChange(event) {
     state.fuelPerMile = fuelPerMile;
     state.cost = finalCost;
     state.marginProfit = marginProfit;
+    state.totalTruckCost=calculateTotalTruckCost(costPerMile,fuelPerMile,distance,equipment?.minimumCost)
     state.totalCost = updatedTotalCost;
     setState(state);
-    //var newCard123 = createSingleQuoteFormCard(event);
-    //console.log("card built");
-    //var nav123 = CardService.newNavigation().updateCard(newCard123);
-    //return CardService.newActionResponseBuilder().setNavigation(nav123).build();
   }
 }
 
 function handleRateChangePerTrip(event) {
   const selectedRate = JSON.parse(event?.formInput?.checkbox_field);
-  console.log("selecting rates for per trip", selectedRate);
-  const [getRateType, setRateType, deleteRateType] =
-    useStorageState("rateType");
+
   const [getSelectedRate, setSelectedRate, deleteSelectedRate] =
     useStorageState("selectedRate");
   setSelectedRate(selectedRate);
-  setRateType(event.formInput.checkbox_field);
+
+
   if (selectedRate?.rateType === "none") {
     return applyParsedRates(event);
   }
+
   const [getRates, setRates, deleteRates] = useStorageState("rates");
+
   let state = getState();
+
   const rate = selectedRate.rate;
+
   const rateIndex = { low: "lowUsd", rate: "rateUsd", high: "highUsd" };
+
   var {
     margin,
     marginProfitBackup,
@@ -634,8 +601,6 @@ function handleRateChangePerTrip(event) {
     distance,
   } = state;
 
-  //const costPerMile = Number(rate.perTrip[rateIndex[selectedRate.rateService]]);
-  //const fuelPerMile = Number(rates.averageFuelSurchargePerMileUsd);
   const totalCost = Number(rate.perTrip[rateIndex[selectedRate.rateType]]);
 
   const finalCost =
@@ -655,10 +620,6 @@ function handleRateChangePerTrip(event) {
   state.marginProfit = marginProfit;
   state.totalCost = updatedTotalCost;
   setState(state);
-  //var newCard123 = createSingleQuoteFormCard(event);
-  //console.log("card built");
-  //var nav123 = CardService.newNavigation().updateCard(newCard123);
-  //return CardService.newActionResponseBuilder().setNavigation(nav123).build();
 }
 
 function CreateImageHeader(section) {
