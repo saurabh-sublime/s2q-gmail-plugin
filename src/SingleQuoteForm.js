@@ -98,7 +98,6 @@ function putTextWidget(section, fieldName, title, value, suggestions) {
   section.addWidget(thisTextWidget);
 }
 
-
 //Function to create Button Widget
 function getButtonWidget(buttonName, methodName, type, color) {
   var buttonAction = CardService.newAction()
@@ -138,7 +137,6 @@ const getEquipmentSuggestions = () => {
   return { equipmentList: equipmentList, equipmentObject: equipmentObject };
 };
 
-
 //Function to create plugin form
 function createInputFormSection(section, event) {
   const [getIsOrderPosted, setIsOrderPosted, deleteIsOrderPosted] =
@@ -172,14 +170,14 @@ function createInputFormSection(section, event) {
 
   var pickupTimeWidget = CardService.newDateTimePicker()
     .setTitle("Pickup time")
-    .setFieldName("pickupTime")
+    .setFieldName("pickupTimestamp")
     .setValueInMsSinceEpoch(state?.pickupTime)
     .setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(
       CardService.newAction()
         .setFunctionName("onInputChange")
         .setParameters({
-          variable: "pickupTime",
+          variable: "pickupTimestamp",
         })
         .setLoadIndicator(CardService.LoadIndicator.SPINNER)
     );
@@ -187,14 +185,14 @@ function createInputFormSection(section, event) {
 
   var deliveryTimeWidget = CardService.newDateTimePicker()
     .setTitle("Delivery time")
-    .setFieldName("deliveryTime")
+    .setFieldName("deliveryTimestamp")
     .setValueInMsSinceEpoch(state?.deliveryTime)
     .setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(
       CardService.newAction()
         .setFunctionName("onInputChange")
         .setParameters({
-          variable: "deliveryTime",
+          variable: "deliveryTimestamp",
         })
         .setLoadIndicator(CardService.LoadIndicator.SPINNER)
     );
@@ -243,7 +241,12 @@ function createInputFormSection(section, event) {
     "Transit Time",
     formatTime(Number(state?.transitTime))
   );
-  putTextWidget(section, "cost", "Truck Cost ($)", formatMoneySpecial(state?.cost));
+  putTextWidget(
+    section,
+    "cost",
+    "Truck Cost ($)",
+    formatMoneySpecial(state?.cost)
+  );
   putTextWidget(
     section,
     "totalTruckCost",
@@ -269,12 +272,7 @@ function createInputFormSection(section, event) {
     "Quote (All In Rate) ($)",
     formatMoneySpecial(state?.totalCost)
   );
-  putTextWidget(
-    section,
-    "comment",
-    "Comment",
-    state?.comment
-  );
+  putTextWidget(section, "comment", "Comment", state?.comment);
 
   section.addWidget(
     getButtonWidget("Recalculate", "rebuildCard", "FILLED", "#a2d45e")
@@ -469,17 +467,11 @@ function addRateSection(section, rates) {
         }
 
         const nullRate = JSON.stringify({ rate: null, rateType: "none" });
-        const isNullRate = !selectedRate || (selectedRate?.rateType === "none");
+        const isNullRate = !selectedRate || selectedRate?.rateType === "none";
 
-        console.log('selected rate', selectedRate)
-        item.addItem(
-          "Not Selected",
-          nullRate,
-          isNullRate
-        );
+        console.log("selected rate", selectedRate);
+        item.addItem("Not Selected", nullRate, isNullRate);
       };
-
-
 
       var radioGroup = CardService.newSelectionInput()
         .setType(CardService.SelectionInputType.RADIO_BUTTON)
@@ -498,12 +490,9 @@ function addRateSection(section, rates) {
         section.addWidget(
           CardService.newTextParagraph().setText(
             "Fuel Surcharge per mile: <b>$" +
-            formatMoneySpecial(
-                rate?.averageFuelSurchargePerMileUsd
-             +
-              "</b>"
-            )
-          ));
+              formatMoneySpecial(rate?.averageFuelSurchargePerMileUsd + "</b>")
+          )
+        );
       }
       section.addWidget(CardService.newDivider());
     } else {
@@ -527,10 +516,9 @@ function handleRateChange(event) {
     useStorageState("selectedRate");
   setSelectedRate(selectedRate);
 
-  if ((selectedRate?.rateType === "none")) {
+  if (selectedRate?.rateType === "none") {
     return applyParsedRates(event);
   }
-
 
   let state = getState();
 
@@ -563,7 +551,12 @@ function handleRateChange(event) {
     state.fuelPerMile = fuelPerMile;
     state.cost = finalCost;
     state.marginProfit = marginProfit;
-    state.totalTruckCost=calculateTotalTruckCost(costPerMile,fuelPerMile,distance,equipment?.minimumCost)
+    state.totalTruckCost = calculateTotalTruckCost(
+      costPerMile,
+      fuelPerMile,
+      distance,
+      equipment?.minimumCost
+    );
     state.totalCost = updatedTotalCost;
     setState(state);
   }
@@ -575,7 +568,6 @@ function handleRateChangePerTrip(event) {
   const [getSelectedRate, setSelectedRate, deleteSelectedRate] =
     useStorageState("selectedRate");
   setSelectedRate(selectedRate);
-
 
   if (selectedRate?.rateType === "none") {
     return applyParsedRates(event);

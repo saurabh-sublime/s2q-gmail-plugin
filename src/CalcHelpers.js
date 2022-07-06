@@ -103,7 +103,7 @@ const recalculateDetails = (event, forceRecalculate, frData) => {
         );
       state.cost = 300;
       state.cost = cost;
-      console.log(getUser().fuelPerMile)
+      console.log(getUser().fuelPerMile);
       state.totalTruckCost = calculateTotalTruckCost(
         parsedData.costPerMile,
         fuelPerMile || 0,
@@ -286,9 +286,9 @@ function sendTmsOrder(event) {
         clientEmailToken: messageId,
         pluginUserEmail: updatedTo,
         pluginUserName: updatedTo,
-        comment:quoteData?.comment,
+        comment: quoteData?.comment,
       };
-      console.log('sent data', datas)
+      console.log("sent data", datas);
       var accessToken =
         PropertiesService.getUserProperties().getProperty("ACCESS_TOKEN");
 
@@ -361,7 +361,7 @@ function createTmsOrder(event) {
         pluginUserEmail: messageId,
         pluginUserName: updatedTo,
         clientEmailToken: updatedTo,
-        comment:quoteData?.comment,
+        comment: quoteData?.comment,
         // totalCost: quoteData?.totalCost,
       };
       var accessToken =
@@ -510,8 +510,14 @@ function fillMailTemplate() {
           "https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.js"
         ).getContentText()
       );
-      const fromDate = moment(quoteData?.pickupTime);
-      const toDate = moment(quoteData?.deliveryTime);
+      const fromDataInFormat = new Date(
+        quoteData?.pickupTimestamp || Date.now()
+      );
+      const toDataInFormat = new Date(
+        quoteData?.deliveryTimestamp || Date.now()
+      );
+      const fromDate = moment(fromDataInFormat);
+      const toDate = moment(toDataInFormat);
 
       const tzFrom = locationJson.find(
         (item) =>
@@ -533,6 +539,16 @@ function fillMailTemplate() {
             fromDate.tz(tzFrom).format("z")
           : undefined,
         deliveryDateTime: quoteData?.deliveryTime
+          ? toDate.format("MM/DD/YYYY hh:mm A") +
+            " " +
+            toDate.tz(tzTo).format("z")
+          : undefined,
+        pickupTimestamp: quoteData?.pickupTime
+          ? fromDate.format("MM/DD/YYYY hh:mm A") +
+            " " +
+            fromDate.tz(tzFrom).format("z")
+          : undefined,
+        deliveryTimestamp: quoteData?.deliveryTime
           ? toDate.format("MM/DD/YYYY hh:mm A") +
             " " +
             toDate.tz(tzTo).format("z")

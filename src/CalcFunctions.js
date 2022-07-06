@@ -13,9 +13,9 @@ var calcFunctions = {
   cost: onCostChange,
   totalTruckCost: onTotalTruckCostChange,
   totalCost: onTotalCostChange,
-  pickupTime: onPickupTimeChange,
-  deliveryTime: onDeliveryTimeChange,
-  comment:onCommentChange,
+  pickupTimestamp: onPickupTimeChange,
+  deliveryTimestamp: onDeliveryTimeChange,
+  comment: onCommentChange,
 };
 
 //On Equipment Change
@@ -83,17 +83,19 @@ function onCostPerMileChange(value, state) {
     totalCostBackup,
     costBackup,
     distance,
-    fuelPerMile,
     costPerMileBackUp,
     equipment,
     distance,
   } = state;
 
   const formattedValue = Number(Number(value).toFixed(2));
-  const totalCost = Number(formattedValue) * Number(distance);
+  const cost = Number(formattedValue) * Number(distance);
+  const fuelPerMile = (
+    (formattedValue * fuelSurchargePercentage) /
+    100
+  ).toFixed(2);
 
-  const finalCost =
-    equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
+  const finalCost = equipment.minimumCost > cost ? equipment.minimumCost : cost;
   const { marginProfit, totalCost: updatedTotalCost } = getCalculatedTotalCost(
     finalCost,
     margin,
@@ -102,6 +104,7 @@ function onCostPerMileChange(value, state) {
   );
 
   state.costPerMile = formatNumber(formattedValue);
+  state.fuelPerMile = fuelPerMile;
   state.cost = finalCost;
   state.marginProfit = marginProfit;
   state.totalTruckCost = calculateTotalTruckCost(
@@ -122,17 +125,20 @@ function onFuelPerMileChange(value, state) {
     fuelPerMile,
     fuelPerMileBackup,
     totalCostBackup,
+    cost,
     equipment,
     margin,
   } = state;
 
   const formattedValue = Number(Number(value).toFixed(2));
-  const fuelSurchargePercentage = (formattedValue / costPerMile) * 100;
-  const totalCost = Number(distance) * Number(costPerMile);
-  const finalCost =
-    equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
+  const totalTruckCost = (cost + formattedValue * distance).toFixed(2);
+
+  const fuelSurchargePercentage = (
+    ((totalTruckCost - cost) / cost) *
+    100
+  ).toFixed(2);
   const { totalCost: updatedTotalCost } = getCalculatedTotalCost(
-    finalCost,
+    cost,
     margin,
     formattedValue,
     distance
@@ -140,12 +146,7 @@ function onFuelPerMileChange(value, state) {
 
   state.fuelPerMile = formatNumber(formattedValue);
   state.fuelSurchargePercentage = formatNumber(fuelSurchargePercentage);
-  state.totalTruckCost = calculateTotalTruckCost(
-    costPerMile,
-    formattedValue,
-    distance,
-    equipment.minimumCost
-  );
+  state.totalTruckCost = totalTruckCost;
   state.totalCost = updatedTotalCost;
 
   return state;
@@ -158,17 +159,16 @@ function onFuelSurchargeChange(value, state) {
     costPerMile,
     fuelPerMileBackup,
     totalCostBackup,
+    cost,
     equipment,
     margin,
   } = state;
 
   const formattedValue = Number(Number(value).toFixed(2));
-  const fuelPerMile = (costPerMile * formattedValue) / 100;
-  const totalCost = Number(distance) * Number(costPerMile);
-  const finalCost =
-    equipment.minimumCost > totalCost ? equipment.minimumCost : totalCost;
+  const totalTruckCost = (cost + (cost * formattedValue) / 100).toFixed(2);
+  const fuelPerMile = ((totalTruckCost - cost) / distance).toFixed(2);
   const { totalCost: updatedTotalCost } = getCalculatedTotalCost(
-    finalCost,
+    cost,
     margin,
     fuelPerMile,
     distance
@@ -176,12 +176,7 @@ function onFuelSurchargeChange(value, state) {
 
   state.fuelSurchargePercentage = formatNumber(formattedValue);
   state.fuelPerMile = fuelPerMile;
-  state.totalTruckCost = calculateTotalTruckCost(
-    costPerMile,
-    fuelPerMile,
-    distance,
-    equipment.minimumCost
-  );
+  state.totalTruckCost = totalTruckCost;
   state.totalCost = updatedTotalCost;
 
   return state;
@@ -349,12 +344,13 @@ function onTotalTruckCostChange(value, state) {
 }
 
 function onPickupTimeChange(value, state) {
-  state.pickupTime = value.msSinceEpoch;
+  console.log("pickup date", value.msSinceEpoch);
+  state.pickupTimestamp = value.msSinceEpoch;
   return state;
 }
 
 function onDeliveryTimeChange(value, state) {
-  state.deliveryTime = value.msSinceEpoch;
+  state.deliveryTimestamp = value.msSinceEpoch;
   return state;
 }
 
