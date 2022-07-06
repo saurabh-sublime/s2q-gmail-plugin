@@ -467,7 +467,10 @@ function addRateSection(section, rates) {
         }
 
         const nullRate = JSON.stringify({ rate: null, rateType: "none" });
-        const isNullRate = !selectedRate || selectedRate?.rateType === "none";
+        const isNullRate =
+          !selectedRate ||
+          selectedRate.rate.rateService !== rate.rateService ||
+          selectedRate?.rateType === "none";
 
         console.log("selected rate", selectedRate);
         item.addItem("Not Selected", nullRate, isNullRate);
